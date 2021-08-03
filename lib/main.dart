@@ -1,67 +1,43 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(MyApp());
-}
+import 'event/list_events.dart';
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+void main() => runApp(Main());
+class Main extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      debugShowCheckedModeBanner: false,
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
+    return FutureBuilder(
+      future: Firebase.initializeApp(),
+      builder: (context, snapshot) {
+        //handle connection error
+        if (snapshot.hasError) {
+          print("Error initializing database");
+          return Text("Error initializing database");
+        }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
+        //handle connection success
+        if (snapshot.connectionState == ConnectionState.done) {
+          return MaterialApp(
+            title: "Events",
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              brightness: Brightness.light,
+              primarySwatch: Colors.blue,
+              visualDensity: VisualDensity.adaptivePlatformDensity,
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+            darkTheme: ThemeData(
+              brightness: Brightness.dark,
+              primarySwatch: Colors.blue,
+              visualDensity: VisualDensity.adaptivePlatformDensity,
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+            themeMode: ThemeMode.system,
+            home: CalendarEvents(title: "Events"),
+          );
+        } else {
+          return CircularProgressIndicator();
+        }
+      },
     );
   }
 }
