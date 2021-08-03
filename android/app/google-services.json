@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "250511412079",
+    "project_id": "alarmdar-6d094",
+    "storage_bucket": "alarmdar-6d094.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:250511412079:android:83f3c9fe3978a7cb1e369a",
+        "android_client_info": {
+          "package_name": "com.martru.alarmdar"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "250511412079-eeida6gf0v6t8gpkviooknvn0evns1jq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.martru.alarmdar",
+            "certificate_hash": "1207efda1111b1a2ae188182afb2b1c1c7783bfb"
+          }
+        },
+        {
+          "client_id": "250511412079-b0n4bdoqqsqfbaj61vp29f40r102jjm7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQzbBkDU8jINiB8u4_4UFrfcLbmNoitdo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "250511412079-b0n4bdoqqsqfbaj61vp29f40r102jjm7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
