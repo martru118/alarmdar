@@ -1,21 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import 'event_info.dart';
+import 'alarm_info.dart';
 import 'firebase_utils.dart';
-import 'form_events.dart';
+import 'form_alarm.dart';
 
 
-class CalendarEvents extends StatefulWidget {
-  CalendarEvents({Key key, this.title}): super(key: key);
+class AlarmsList extends StatefulWidget {
+  AlarmsList({Key key, this.title}): super(key: key);
   final String title;
 
   @override
-  EventsPage createState() => EventsPage();
+  AlarmsPage createState() => AlarmsPage();
 }
 
-class EventsPage extends State<CalendarEvents> {
-  final db = new EventModel();
+class AlarmsPage extends State<AlarmsList> {
+  final db = new AlarmModel();
   String _selected;
 
   @override
@@ -24,10 +24,9 @@ class EventsPage extends State<CalendarEvents> {
       appBar: AppBar(title: Text(widget.title)),
       body: buildList(),
       floatingActionButton: new FloatingActionButton(
-          tooltip: "Add event",
           child: const Icon(Icons.add),
           onPressed: () {
-            print("Add event");
+            print("Add alarm");
             _startForm(context);
           }
       ),
@@ -36,29 +35,29 @@ class EventsPage extends State<CalendarEvents> {
 
   Widget buildList() {
     return StreamBuilder<QuerySnapshot>(
-      stream: db.retrieveEvents(),
+      stream: db.retrieveAll(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
           return CircularProgressIndicator();
         } else {
           return ListView(
-            children: snapshot.data.docs.map((DocumentSnapshot snapshot) => _buildEvent(context, snapshot)).toList(),
+            children: snapshot.data.docs.map((DocumentSnapshot snapshot) => buildAlarm(context, snapshot)).toList(),
           );
         }
       },
     );
   }
 
-  Widget _buildEvent(BuildContext context, DocumentSnapshot documentData) {
-    final eventInfo = EventInfo.fromMap(documentData.data(), reference: documentData.reference);
+  Widget buildAlarm(BuildContext context, DocumentSnapshot documentData) {
+    final alarmInfo = AlarmInfo.fromMap(documentData.data(), reference: documentData.reference);
 
     return Card(
       elevation: 3.0,
       child: ListTile(
-        title: Text("${eventInfo.name}\n${eventInfo.date}",
+        title: Text("${alarmInfo.name}\n${alarmInfo.startTime}",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text(_buildSubtitle(eventInfo)),
+        subtitle: Text(_buildSubtitle(alarmInfo)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -66,10 +65,10 @@ class EventsPage extends State<CalendarEvents> {
             IconButton(icon: const Icon(Icons.edit),
               padding: EdgeInsets.only(right: 16.0),
               constraints: BoxConstraints(),
-              tooltip: "Edit Event",
+              tooltip: "Edit Alarm",
               onPressed: () {
-                _selected = eventInfo.reference.id;
-                print("Edit event: $_selected");
+                _selected = alarmInfo.reference.id;
+                print("Edit alarm: $_selected");
 
                 //edit selected grade
                 _startForm(context, db.retrievebyID(_selected), _selected);
@@ -80,14 +79,14 @@ class EventsPage extends State<CalendarEvents> {
             IconButton(icon: const Icon(Icons.delete),
               padding: EdgeInsets.zero,
               constraints: BoxConstraints(),
-              tooltip: "Delete Event",
+              tooltip: "Delete Alarm",
               onPressed: () {
-                _selected = eventInfo.reference.id;
-                print("Delete event: $_selected");
+                _selected = alarmInfo.reference.id;
+                print("Delete alarm: $_selected");
 
                 //delete selected grade
                 if (_selected != null) {
-                  db.deleteEvent(_selected);
+                  db.deleteData(_selected);
                   _selected = null;
                 }
               },
@@ -98,19 +97,18 @@ class EventsPage extends State<CalendarEvents> {
     );
   }
 
-  //build subtitle for event
-  String _buildSubtitle(EventInfo event) {
-    String subtitle = "${event.description}";
-    subtitle += "\n\n\uD83D\uDD53\t${event.startTime} to ${event.endTime}";
+  //build subtitle for alarm
+  String _buildSubtitle(AlarmInfo alarm) {
+    String subtitle = "${alarm.description}";
 
     //add location to subtitle
-    if (event.location.isNotEmpty) subtitle += "\n\uD83D\uDCCD\t${event.location}";
+    if (alarm.location.isNotEmpty) subtitle += "\n\uD83D\uDCCD\t${alarm.location}";
     return subtitle;
   }
 
-  void _startForm(BuildContext context, [EventInfo eventInfo, String _id=""]) async {
+  void _startForm(BuildContext context, [AlarmInfo alarmInfo, String _id=""]) async {
     await Navigator.of(context).push(new MaterialPageRoute(
-      builder: (BuildContext context) => new CalendarForm(event: eventInfo, refID: _id),
+      builder: (BuildContext context) => new AlarmForm(alarmInfo: alarmInfo, refID: _id),
     ));
 
     _selected = null;

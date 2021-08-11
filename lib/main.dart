@@ -1,10 +1,11 @@
+import 'package:alarmdar/model/list_alarms.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-import 'event/list_events.dart';
-
 void main() => runApp(Main());
 class Main extends StatelessWidget {
+  final String title = "Your Alarms";
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -19,7 +20,7 @@ class Main extends StatelessWidget {
         //handle connection success
         if (snapshot.connectionState == ConnectionState.done) {
           return MaterialApp(
-            title: "Events",
+            title: title,
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               brightness: Brightness.light,
@@ -32,7 +33,7 @@ class Main extends StatelessWidget {
               visualDensity: VisualDensity.adaptivePlatformDensity,
             ),
             themeMode: ThemeMode.system,
-            home: CalendarEvents(title: "Events"),
+            home: AlarmsList(title: title),
           );
         } else {
           return CircularProgressIndicator();
