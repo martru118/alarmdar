@@ -17,10 +17,8 @@ dependencies:
   weekday_selector: ^1.0.0
 
   # firebase dependencies
-  firebase_core:
-  firebase_auth:
-  cloud_firestore:
-  firebase_messaging:
+  firebase_core: ^0.7.0
+  cloud_firestore: ^0.16.0+1
 
   # misc dependencies
   intl:

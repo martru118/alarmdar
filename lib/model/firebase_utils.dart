@@ -13,12 +13,9 @@ class AlarmModel {
 
   //get specific alarms by reference ID
   AlarmInfo retrievebyID(String path) {
-    AlarmInfo alarm;
     db.collection(collectionPath).doc(path).get().then((info) {
-      alarm = AlarmInfo.fromMap(info.data());
+      return AlarmInfo.fromMap(info.data(), reference: info.reference);
     });
-
-    return alarm;
   }
 
   //add alarm
@@ -27,9 +24,9 @@ class AlarmModel {
   }
 
   //update alarm
-  void updateData(AlarmInfo alarm, String document) {
+  void updateData(AlarmInfo alarm, String path) {
     try {
-      db.collection(collectionPath).doc(document).update(alarm.toJson());
+      db.collection(collectionPath).doc(path).update(alarm.toJson());
     } catch (e) {
       e.toString();
     }

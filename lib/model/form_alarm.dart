@@ -32,11 +32,11 @@ class FormPage extends State<AlarmForm> {
 
   @override
   void initState() {
+    super.initState();
+
     _name = TextEditingController(text: "");
     _description = TextEditingController(text: "");
     _location = TextEditingController(text: "");
-
-    super.initState();
   }
 
   @override
@@ -115,6 +115,7 @@ class FormPage extends State<AlarmForm> {
                       //name textfield
                       TextFormField(
                         controller: _name,
+                        textCapitalization: TextCapitalization.sentences,
                         validator: (value) {
                           if (value.isEmpty) {return "Enter a name for this alarm";}
                           return null;
@@ -130,6 +131,7 @@ class FormPage extends State<AlarmForm> {
                       TextFormField(
                         controller: _description,
                         keyboardType: TextInputType.multiline,
+                        textCapitalization: TextCapitalization.sentences,
                         maxLines: null,
                         validator: (value) {
                           if (value.isEmpty) {return "Enter a description for this alarm";}
@@ -145,6 +147,7 @@ class FormPage extends State<AlarmForm> {
                       //location textfield
                       TextField(
                         controller: _location,
+                        textCapitalization: TextCapitalization.sentences,
                         decoration: const InputDecoration(
                           border: UnderlineInputBorder(),
                           icon: const Icon(Icons.location_on),
@@ -157,13 +160,7 @@ class FormPage extends State<AlarmForm> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Text("Sync to Google Calendar"),
-                          Switch(
-                            value: sync,
-                            onChanged: (value) {
-                              print("Toggle Google Calendar sync");
-                              setState(() => sync = value);
-                            },
-                          ),
+                          Switch(value: sync, onChanged: null),
                         ]
                       ),
                     ]

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'alarm_info.dart';
@@ -16,7 +17,8 @@ class AlarmsList extends StatefulWidget {
 
 class AlarmsPage extends State<AlarmsList> {
   final db = new AlarmModel();
-  String _selected;
+  static const double pad = 12;
+  String selected;
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +26,11 @@ class AlarmsPage extends State<AlarmsList> {
       appBar: AppBar(title: Text(widget.title)),
       body: buildList(),
       floatingActionButton: new FloatingActionButton(
-          child: const Icon(Icons.add),
-          onPressed: () {
-            print("Add alarm");
-            _startForm(context);
-          }
+        child: const Icon(Icons.add),
+        onPressed: () {
+          print("Add alarm");
+          startForm(context);
+        }
       ),
     );
   }
@@ -41,6 +43,7 @@ class AlarmsPage extends State<AlarmsList> {
           return CircularProgressIndicator();
         } else {
           return ListView(
+            padding: EdgeInsets.symmetric(horizontal: pad/2),
             children: snapshot.data.docs.map((DocumentSnapshot snapshot) => buildAlarm(context, snapshot)).toList(),
           );
         }
@@ -51,66 +54,79 @@ class AlarmsPage extends State<AlarmsList> {
   Widget buildAlarm(BuildContext context, DocumentSnapshot documentData) {
     final alarmInfo = AlarmInfo.fromMap(documentData.data(), reference: documentData.reference);
 
-    return Card(
-      elevation: 3.0,
-      child: ListTile(
-        title: Text("${alarmInfo.name}\n${alarmInfo.startTime}",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(_buildSubtitle(alarmInfo)),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            //edit button
-            IconButton(icon: const Icon(Icons.edit),
-              padding: EdgeInsets.only(right: 16.0),
-              constraints: BoxConstraints(),
-              tooltip: "Edit Alarm",
-              onPressed: () {
-                _selected = alarmInfo.reference.id;
-                print("Edit alarm: $_selected");
+    return Dismissible(
+      key: UniqueKey(),
+      background: Container(color: Colors.red),
+      child: Card(
+        elevation: pad/2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+        child: InkWell(
+          child: ListTile(
+            leading: Text("${alarmInfo.startTime.replaceFirst(RegExp(' '), '\n')}"),
+            title: Text("${alarmInfo.name}", style: TextStyle(fontWeight: FontWeight.bold)),
 
-                //edit selected grade
-                _startForm(context, db.retrievebyID(_selected), _selected);
-              }
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                //description
+                Text("${alarmInfo.description}"), SizedBox(height: pad/2),
+
+                //alarm date
+                Row(children: [
+                  Icon(CupertinoIcons.bell_fill),
+                  SizedBox(width: pad/4),
+                  Text("${alarmInfo.date}"),
+                ]), SizedBox(height: pad/2),
+
+                //location details
+                Row(children: [
+                  Icon(CupertinoIcons.map_pin),
+                  SizedBox(width: pad/4),
+                  Expanded(child: Text(alarmInfo.location.isEmpty? "Location not specified" : "${alarmInfo.location}")),
+                ]), SizedBox(height: pad/2),
+              ]
             ),
 
-            //delete button
-            IconButton(icon: const Icon(Icons.delete),
-              padding: EdgeInsets.zero,
-              constraints: BoxConstraints(),
-              tooltip: "Delete Alarm",
-              onPressed: () {
-                _selected = alarmInfo.reference.id;
-                print("Delete alarm: $_selected");
-
-                //delete selected grade
-                if (_selected != null) {
-                  db.deleteData(_selected);
-                  _selected = null;
-                }
-              },
+            trailing: Column(
+              children: [
+                Switch(
+                  value: alarmInfo.shouldNotify,
+                  onChanged: (value) {
+                    print("Toggle alarm");
+                    setState(() => alarmInfo.shouldNotify = value);
+                  }
+                ),
+              ],
             ),
-          ],
+          ),
+
+          onTap: () {
+            selected = alarmInfo.reference.id;
+            print("Edit alarm ${alarmInfo.toJson()}");
+
+            //edit selected alarm
+            startForm(context, alarmInfo, selected);
+          },
         ),
       ),
+      onDismissed: (direction) {
+        selected = alarmInfo.reference.id;
+        print("Delete alarm ${alarmInfo.toJson()}");
+
+        //delete selected alarm
+        if (selected != null) {
+          db.deleteData(selected);
+          selected = null;
+        }
+      },
     );
   }
 
-  //build subtitle for alarm
-  String _buildSubtitle(AlarmInfo alarm) {
-    String subtitle = "${alarm.description}";
-
-    //add location to subtitle
-    if (alarm.location.isNotEmpty) subtitle += "\n\uD83D\uDCCD\t${alarm.location}";
-    return subtitle;
-  }
-
-  void _startForm(BuildContext context, [AlarmInfo alarmInfo, String _id=""]) async {
+  void startForm(BuildContext context, [AlarmInfo alarmInfo, String id=""]) async {
     await Navigator.of(context).push(new MaterialPageRoute(
-      builder: (BuildContext context) => new AlarmForm(alarmInfo: alarmInfo, refID: _id),
+      builder: (BuildContext context) => new AlarmForm(alarmInfo: alarmInfo, refID: id),
     ));
 
-    _selected = null;
+    selected = null;
   }
 }

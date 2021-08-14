@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class AlarmInfo {
   DocumentReference reference;
   @required String startTime;
-  @required List<bool> weekdays;
+  @required List<dynamic> weekdays;
   @required String date;
   @required String name;
   @required String description;
@@ -24,16 +24,15 @@ class AlarmInfo {
   });
 
   //get an alarm from map
-  AlarmInfo.fromMap(Map<String, dynamic> snapshot, {this.reference}) {
-    this.startTime = snapshot['start'];
-    this.weekdays = snapshot['weekdays'];
-    this.date = snapshot['date'];
-    this.name = snapshot['name'];
-    this.description = snapshot['desc'];
-    this.location = snapshot['loc'];
-    this.gSync = snapshot['sync'];
+  AlarmInfo.fromMap(Map<String, dynamic> snapshot, {this.reference}):
+    this.startTime = snapshot['start'],
+    this.weekdays = snapshot['weekdays'],
+    this.date = snapshot['date'],
+    this.name = snapshot['name'],
+    this.description = snapshot['desc'],
+    this.location = snapshot['loc'],
+    this.gSync = snapshot['sync'],
     this.shouldNotify = snapshot['notify'];
-  }
 
   //set alarm as JSON
   dynamic toJson() {
