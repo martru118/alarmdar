@@ -8,7 +8,7 @@ class AlarmModel {
 
   //get alarms from Cloud Firestore
   Stream<QuerySnapshot> retrieveAll() {
-    return db.collection(collectionPath).orderBy("start", descending: true).snapshots();
+    return db.collection(collectionPath).orderBy("start").snapshots();
   }
 
   //get specific alarms by reference ID

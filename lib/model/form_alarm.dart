@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:weekday_selector/weekday_selector.dart';
 
 import 'alarm_info.dart';
@@ -20,31 +21,45 @@ class AlarmForm extends StatefulWidget {
 class FormPage extends State<AlarmForm> {
   final db = AlarmModel();
   final formKey = new GlobalKey<FormState>();
-
-  //initialize ui
-  TimeOfDay _start = TimeOfDay.now();
-  String eta = "tomorrow";
-  List<bool> weekdays = List.filled(7, false, growable: false);
-
   static const double pad = 12;
-  var _name, _description, _location;
+
+  DateTime startTime;
+  String startDate;
+  List<bool> daysList;
+  var alarmName, description, location;
   bool sync = false;
 
   @override
   void initState() {
     super.initState();
+    AlarmInfo alarm = widget.alarmInfo;
 
-    _name = TextEditingController(text: "");
-    _description = TextEditingController(text: "");
-    _location = TextEditingController(text: "");
+    if (alarm == null) {
+      //initialize widgets in form
+      startTime = new DateTime.now();
+      daysList = List.filled(7, false, growable: false);
+      startDate = whentoRing();
+
+      alarmName = TextEditingController(text: "");
+      description = TextEditingController(text: "");
+      location = TextEditingController(text: "");
+    } else {
+      //autofill form
+      startTime = DateFormat.jm().parse(alarm.startTime);
+      daysList = alarm.weekdays.map((i) => i as bool).toList(growable: false);
+      startDate = alarm.date;
+
+      alarmName = TextEditingController(text: alarm.name);
+      description = TextEditingController(text: alarm.description);
+      location = TextEditingController(text: alarm.location);
+    }
   }
 
   @override
   void dispose() {
-    _name.dispose();
-    _description.dispose();
-    _location.dispose();
-
+    alarmName.dispose();
+    description.dispose();
+    location.dispose();
     super.dispose();
   }
 
@@ -69,11 +84,11 @@ class FormPage extends State<AlarmForm> {
                     data: CupertinoThemeData(brightness: Theme.of(context).brightness),
                     child: CupertinoDatePicker(
                       mode: CupertinoDatePickerMode.time,
-                      initialDateTime: DateTime.now(),
+                      initialDateTime: startTime,
                       use24hFormat: MediaQuery.of(context).alwaysUse24HourFormat,
                       onDateTimeChanged: (date) {
-                        _start = TimeOfDay.fromDateTime(date);
-                        print("Alarm set for ${_start.format(context)}");
+                        HapticFeedback.selectionClick();
+                        startTime = date;
                       },
                     ),
                   ),
@@ -86,15 +101,16 @@ class FormPage extends State<AlarmForm> {
                 selectedElevation: pad/3,
                 textStyle: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).accentColor),
                 selectedTextStyle: TextStyle(fontWeight: FontWeight.bold),
-                onChanged: (date) {
-                  setState(() => weekdays[date % 7] = !weekdays[date % 7]);
+                values: daysList,
+                onChanged: (day) {
+                  HapticFeedback.selectionClick();
 
-                  //change message for next alarm
-                  if (weekdays.where((i) => i).length == 7) eta = "everyday";
-                  else if (weekdays.where((i) => !i).length == 7) eta = "tomorrow";
-                  else eta = "on select weekdays";
+                  setState(() {
+                    //select weekdays for repeating alarms
+                    daysList[day % 7] = !daysList[day % 7];
+                    startDate = whentoRing();
+                  });
                 },
-                values: weekdays,
               ),
 
               Card(
@@ -105,16 +121,18 @@ class FormPage extends State<AlarmForm> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      //show preview for next alarm
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("Alarm will go off $eta"),
+                          Text("Alarm will ring on $startDate"),
+                          SizedBox(height: pad/2),
                         ],
-                      ), SizedBox(height: pad/2),
+                      ),
 
                       //name textfield
                       TextFormField(
-                        controller: _name,
+                        controller: alarmName,
                         textCapitalization: TextCapitalization.sentences,
                         validator: (value) {
                           if (value.isEmpty) {return "Enter a name for this alarm";}
@@ -129,7 +147,7 @@ class FormPage extends State<AlarmForm> {
 
                       //description textfield
                       TextFormField(
-                        controller: _description,
+                        controller: description,
                         keyboardType: TextInputType.multiline,
                         textCapitalization: TextCapitalization.sentences,
                         maxLines: null,
@@ -146,19 +164,20 @@ class FormPage extends State<AlarmForm> {
 
                       //location textfield
                       TextField(
-                        controller: _location,
+                        controller: location,
                         textCapitalization: TextCapitalization.sentences,
                         decoration: const InputDecoration(
                           border: UnderlineInputBorder(),
                           icon: const Icon(Icons.location_on),
                           labelText: "Location (optional)",
                         ),
-                      ), SizedBox(height: pad/2),
+                      ),
 
                       //sync switch
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          SizedBox(height: pad/2),
                           Text("Sync to Google Calendar"),
                           Switch(value: sync, onChanged: null),
                         ]
@@ -175,16 +194,17 @@ class FormPage extends State<AlarmForm> {
       floatingActionButton: new FloatingActionButton(
         child: const Icon(Icons.save),
         onPressed: () {
-          String name = _name.text;
-          String desc = _description.text;
-          String loc = _location.text;
+          print("Save alarm");
+          HapticFeedback.selectionClick();
 
           //validate form
           if (formKey.currentState.validate()) {
-            print("Save alarm");
+            setAlarm(alarmName.text, description.text, location.text);
 
-            setAlarm(name, desc, loc);
             Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text("Alarm has been set"),
+            ));
           }
         }
       ),
@@ -192,33 +212,33 @@ class FormPage extends State<AlarmForm> {
   }
 
 
-  //determine the next day to fire alarm
-  String whentoFire() {
-    String _date;
-    final today = DateTime.now();
+  //determines the date for the next alarm
+  String whentoRing() {
+    final DateTime today = DateTime.now();
+    DateTime nextDate;
 
-    if (weekdays.where((i) => !i).length == 7) {
-      //alarm does not repeat as no weekdays are selected, so the alarm fires tomorrow
-      _date = DateFormat.yMd().format(DateTime(today.year, today.month, today.day + 1));
+    if (daysList.where((i) => !i).length == 7) {
+      //alarm rings tomorrow if no weekdays are selected
+      nextDate = DateTime(today.year, today.month, today.day + 1);
     } else {
       for (int wd = 0; wd < 7; wd++) {
-        if (weekdays[(today.weekday + wd) % 7]) {
-          //alarm repeats, so the alarm fires on the next selected weekday
-          _date = DateFormat.yMd().format(DateTime(today.year, today.month, today.day + wd));
+        if (daysList[(today.weekday + wd) % 7]) {
+          //alarm rings on the next selected weekday
+          nextDate = DateTime(today.year, today.month, today.day + wd);
           break;
         }
       }
     }
 
-    return _date;
+    return DateFormat.MMMEd().format(nextDate);
   }
 
   //save alarm details to database
   void setAlarm(String name, String desc, String loc) {
     AlarmInfo alarm = new AlarmInfo(
-      startTime: _start.format(context),
-      weekdays: weekdays,
-      date: whentoFire(),
+      startTime: TimeOfDay.fromDateTime(startTime).format(context),
+      weekdays: daysList,
+      date: startDate,
       name: name,
       description: desc,
       location: loc,
@@ -226,8 +246,7 @@ class FormPage extends State<AlarmForm> {
       shouldNotify: true,
     );
 
-    print("${alarm.toJson()}");
-    if (widget.refID.isEmpty) db.storeData(alarm);
-    else db.updateData(alarm, widget.refID);
+    //send alarm to database
+    widget.refID.isEmpty? db.storeData(alarm) : db.updateData(alarm, widget.refID);
   }
 }

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'alarm_info.dart';
 import 'firebase_utils.dart';
@@ -18,7 +19,9 @@ class AlarmsList extends StatefulWidget {
 class AlarmsPage extends State<AlarmsList> {
   final db = new AlarmModel();
   static const double pad = 12;
+
   String selected;
+  bool shouldRing = true;
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +31,7 @@ class AlarmsPage extends State<AlarmsList> {
       floatingActionButton: new FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {
+          HapticFeedback.selectionClick();
           print("Add alarm");
           startForm(context);
         }
@@ -69,21 +73,23 @@ class AlarmsPage extends State<AlarmsList> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 //description
-                Text("${alarmInfo.description}"), SizedBox(height: pad/2),
+                Text("${alarmInfo.description}"), SizedBox(height: pad),
 
                 //alarm date
                 Row(children: [
                   Icon(CupertinoIcons.bell_fill),
                   SizedBox(width: pad/4),
                   Text("${alarmInfo.date}"),
-                ]), SizedBox(height: pad/2),
+                  SizedBox(height: pad/2),
+                ]),
 
                 //location details
                 Row(children: [
                   Icon(CupertinoIcons.map_pin),
                   SizedBox(width: pad/4),
                   Expanded(child: Text(alarmInfo.location.isEmpty? "Location not specified" : "${alarmInfo.location}")),
-                ]), SizedBox(height: pad/2),
+                  SizedBox(height: pad/2),
+                ]),
               ]
             ),
 
@@ -92,8 +98,16 @@ class AlarmsPage extends State<AlarmsList> {
                 Switch(
                   value: alarmInfo.shouldNotify,
                   onChanged: (value) {
-                    print("Toggle alarm");
-                    setState(() => alarmInfo.shouldNotify = value);
+                    selected = alarmInfo.reference.id;
+                    HapticFeedback.selectionClick();
+
+                    //toggle alarm switch on/off
+                    setState(() {
+                      alarmInfo.shouldNotify = value;
+                      db.updateData(alarmInfo, selected);
+
+                      print("Toggle alarm ${alarmInfo.toJson()}");
+                    });
                   }
                 ),
               ],
@@ -102,6 +116,7 @@ class AlarmsPage extends State<AlarmsList> {
 
           onTap: () {
             selected = alarmInfo.reference.id;
+            HapticFeedback.selectionClick();
             print("Edit alarm ${alarmInfo.toJson()}");
 
             //edit selected alarm
@@ -111,7 +126,9 @@ class AlarmsPage extends State<AlarmsList> {
       ),
       onDismissed: (direction) {
         selected = alarmInfo.reference.id;
-        print("Delete alarm ${alarmInfo.toJson()}");
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Alarm has been deleted"),
+        ));
 
         //delete selected alarm
         if (selected != null) {
