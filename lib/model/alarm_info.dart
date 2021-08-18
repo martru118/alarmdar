@@ -6,6 +6,7 @@ class AlarmInfo {
   @required String startTime;
   @required List<dynamic> weekdays;
   @required String date;
+  @required int timestamp;
   @required String name;
   @required String description;
   @required String location;
@@ -16,6 +17,7 @@ class AlarmInfo {
     this.startTime,
     this.weekdays,
     this.date,
+    this.timestamp,
     this.name,
     this.description,
     this.location,
@@ -28,6 +30,7 @@ class AlarmInfo {
     this.startTime = snapshot['start'],
     this.weekdays = snapshot['weekdays'],
     this.date = snapshot['date'],
+    this.timestamp = snapshot['timestamp'],
     this.name = snapshot['name'],
     this.description = snapshot['desc'],
     this.location = snapshot['loc'],
@@ -40,6 +43,7 @@ class AlarmInfo {
       'start': startTime,
       'weekdays': weekdays,
       'date': date,
+      'timestamp': timestamp,
       'name': name,
       'desc': description,
       'loc': location,

@@ -26,7 +26,17 @@ class AlarmsPage extends State<AlarmsList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(title: Text(widget.title),
+        actions: [
+          IconButton(icon: Icon(CupertinoIcons.profile_circled),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text("Login to Google Calendar"),
+              ));
+            },
+          )
+        ],
+      ),
       body: buildList(),
       floatingActionButton: new FloatingActionButton(
         child: const Icon(Icons.add),
@@ -73,23 +83,23 @@ class AlarmsPage extends State<AlarmsList> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 //description
-                Text("${alarmInfo.description}"), SizedBox(height: pad),
+                Text("${alarmInfo.description}"), SizedBox(height: pad/2),
 
                 //alarm date
                 Row(children: [
-                  Icon(CupertinoIcons.bell_fill),
-                  SizedBox(width: pad/4),
-                  Text("${alarmInfo.date}"),
-                  SizedBox(height: pad/2),
-                ]),
+                  Icon(Icons.alarm), SizedBox(width: pad/3),
+                  Expanded(child: Text("${alarmInfo.date}",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  )),
+                ]), SizedBox(height: pad/4),
 
                 //location details
                 Row(children: [
-                  Icon(CupertinoIcons.map_pin),
-                  SizedBox(width: pad/4),
-                  Expanded(child: Text(alarmInfo.location.isEmpty? "Location not specified" : "${alarmInfo.location}")),
-                  SizedBox(height: pad/2),
-                ]),
+                  Icon(Icons.location_pin), SizedBox(width: pad/3),
+                  Expanded(child: Text(
+                    alarmInfo.location.isEmpty? "Location not specified" : "${alarmInfo.location}"
+                  )),
+                ]), SizedBox(height: pad/4),
               ]
             ),
 

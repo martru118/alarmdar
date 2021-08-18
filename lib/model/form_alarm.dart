@@ -25,6 +25,7 @@ class FormPage extends State<AlarmForm> {
 
   DateTime startTime;
   String startDate;
+  int timestamp;
   List<bool> daysList;
   var alarmName, description, location;
   bool sync = false;
@@ -47,7 +48,7 @@ class FormPage extends State<AlarmForm> {
       //autofill form
       startTime = DateFormat.jm().parse(alarm.startTime);
       daysList = alarm.weekdays.map((i) => i as bool).toList(growable: false);
-      startDate = alarm.date;
+      startDate = whentoRing();
 
       alarmName = TextEditingController(text: alarm.name);
       description = TextEditingController(text: alarm.description);
@@ -125,8 +126,8 @@ class FormPage extends State<AlarmForm> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("Alarm will ring on $startDate"),
-                          SizedBox(height: pad/2),
+                          Text("Alarm will ring on "),
+                          Text("$startDate", style: TextStyle(fontWeight: FontWeight.bold)),
                         ],
                       ),
 
@@ -141,9 +142,9 @@ class FormPage extends State<AlarmForm> {
                         decoration: const InputDecoration(
                           border: UnderlineInputBorder(),
                           icon: const Icon(Icons.event),
-                          hintText: "Name*",
+                          labelText: "Name",
                         ),
-                      ), SizedBox(height: pad),
+                      ),
 
                       //description textfield
                       TextFormField(
@@ -158,7 +159,7 @@ class FormPage extends State<AlarmForm> {
                         decoration: const InputDecoration(
                           border: UnderlineInputBorder(),
                           icon: const Icon(Icons.list),
-                          hintText: "Description*",
+                          labelText: "Description",
                         ),
                       ),
 
@@ -177,7 +178,6 @@ class FormPage extends State<AlarmForm> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          SizedBox(height: pad/2),
                           Text("Sync to Google Calendar"),
                           Switch(value: sync, onChanged: null),
                         ]
@@ -230,7 +230,13 @@ class FormPage extends State<AlarmForm> {
       }
     }
 
+    timestamp = getTimeStamp(nextDate, startTime);
     return DateFormat.MMMEd().format(nextDate);
+  }
+
+  //convert alarm date and time to unix timestamp
+  int getTimeStamp(DateTime date, DateTime time) {
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute).millisecondsSinceEpoch;
   }
 
   //save alarm details to database
@@ -239,6 +245,7 @@ class FormPage extends State<AlarmForm> {
       startTime: TimeOfDay.fromDateTime(startTime).format(context),
       weekdays: daysList,
       date: startDate,
+      timestamp: timestamp,
       name: name,
       description: desc,
       location: loc,
