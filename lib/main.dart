@@ -24,12 +24,12 @@ class Main extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               brightness: Brightness.light,
-              primarySwatch: Colors.blue,
+              primarySwatch: Colors.green,
               visualDensity: VisualDensity.adaptivePlatformDensity,
             ),
             darkTheme: ThemeData(
               brightness: Brightness.dark,
-              primarySwatch: Colors.blue,
+              primarySwatch: Colors.red,
               visualDensity: VisualDensity.adaptivePlatformDensity,
             ),
             themeMode: ThemeMode.system,

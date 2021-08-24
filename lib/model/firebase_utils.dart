@@ -12,10 +12,13 @@ class AlarmModel {
   }
 
   //get specific alarms by reference ID
-  AlarmInfo retrievebyID(String path) {
-    db.collection(collectionPath).doc(path).get().then((info) {
-      return AlarmInfo.fromMap(info.data(), reference: info.reference);
+  Future<AlarmInfo> retrievebyID(String path) async {
+    AlarmInfo alarmInfo;
+    await db.collection(collectionPath).doc(path).get().then((info) {
+      alarmInfo = AlarmInfo.fromMap(info.data(), reference: info.reference);
     });
+
+    return alarmInfo;
   }
 
   //add alarm

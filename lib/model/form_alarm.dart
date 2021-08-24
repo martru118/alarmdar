@@ -11,8 +11,12 @@ import 'firebase_utils.dart';
 
 class AlarmForm extends StatefulWidget {
   final AlarmInfo alarmInfo;
-  final String refID;
-  AlarmForm({Key key, this.alarmInfo, this.refID});
+  final String title;
+
+  AlarmForm({Key key,
+    @required this.alarmInfo,
+    @required this.title,
+  });
 
   @override
   FormPage createState() => FormPage();
@@ -23,6 +27,7 @@ class FormPage extends State<AlarmForm> {
   final formKey = new GlobalKey<FormState>();
   static const double pad = 12;
 
+  String selected;
   DateTime startTime;
   String startDate;
   int timestamp;
@@ -37,6 +42,7 @@ class FormPage extends State<AlarmForm> {
 
     if (alarm == null) {
       //initialize widgets in form
+      selected = "";
       startTime = new DateTime.now();
       daysList = List.filled(7, false, growable: false);
       startDate = whentoRing();
@@ -46,6 +52,7 @@ class FormPage extends State<AlarmForm> {
       location = TextEditingController(text: "");
     } else {
       //autofill form
+      selected = alarm.reference.id;
       startTime = DateFormat.jm().parse(alarm.startTime);
       daysList = alarm.weekdays.map((i) => i as bool).toList(growable: false);
       startDate = whentoRing();
@@ -67,7 +74,7 @@ class FormPage extends State<AlarmForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Set Alarm"), leading: BackButton()),
+      appBar: AppBar(title: Text(widget.title), leading: BackButton()),
       body: Form(
         key: formKey,
         child: GestureDetector(
@@ -192,19 +199,17 @@ class FormPage extends State<AlarmForm> {
       ),
 
       floatingActionButton: new FloatingActionButton(
+        tooltip: "Save Changes",
         child: const Icon(Icons.save),
         onPressed: () {
-          print("Save alarm");
-          HapticFeedback.selectionClick();
-
           //validate form
           if (formKey.currentState.validate()) {
             setAlarm(alarmName.text, description.text, location.text);
-
-            Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text("Alarm has been set"),
             ));
+
+            Navigator.pop(context);
           }
         }
       ),
@@ -254,6 +259,12 @@ class FormPage extends State<AlarmForm> {
     );
 
     //send alarm to database
-    widget.refID.isEmpty? db.storeData(alarm) : db.updateData(alarm, widget.refID);
+    if (selected.isEmpty) {
+      print("Store alarm in database");
+      db.storeData(alarm);
+    } else {
+      print("Update alarm in database");
+      db.updateData(alarm, selected);
+    }
   }
 }

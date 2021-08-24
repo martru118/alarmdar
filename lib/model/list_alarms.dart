@@ -1,5 +1,5 @@
+import 'package:alarmdar/model/alarm_preview.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -18,17 +18,16 @@ class AlarmsList extends StatefulWidget {
 
 class AlarmsPage extends State<AlarmsList> {
   final db = new AlarmModel();
-  static const double pad = 12;
-
+  static const double pad = 14;
   String selected;
-  bool shouldRing = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.title),
         actions: [
-          IconButton(icon: Icon(CupertinoIcons.profile_circled),
+          IconButton(icon: Icon(Icons.account_circle),
+            tooltip: "Account Settings",
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text("Login to Google Calendar"),
@@ -39,12 +38,9 @@ class AlarmsPage extends State<AlarmsList> {
       ),
       body: buildList(),
       floatingActionButton: new FloatingActionButton(
+        tooltip: "New Alarm",
         child: const Icon(Icons.add),
-        onPressed: () {
-          HapticFeedback.selectionClick();
-          print("Add alarm");
-          startForm(context);
-        }
+        onPressed: () => startForm(context, "Set Alarm"),
       ),
     );
   }
@@ -58,7 +54,8 @@ class AlarmsPage extends State<AlarmsList> {
         } else {
           return ListView(
             padding: EdgeInsets.symmetric(horizontal: pad/2),
-            children: snapshot.data.docs.map((DocumentSnapshot snapshot) => buildAlarm(context, snapshot)).toList(),
+            children: snapshot.data.docs.map((DocumentSnapshot snapshot) =>
+                buildAlarm(context, snapshot)).toList(),
           );
         }
       },
@@ -76,31 +73,35 @@ class AlarmsPage extends State<AlarmsList> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
         child: InkWell(
           child: ListTile(
-            leading: Text("${alarmInfo.startTime.replaceFirst(RegExp(' '), '\n')}"),
-            title: Text("${alarmInfo.name}", style: TextStyle(fontWeight: FontWeight.bold)),
-
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            leading: Text(alarmInfo.startTime.replaceFirst(RegExp(' '), '\n')),
+            title: Text(alarmInfo.name, textScaleFactor: 1.5,
+              style: TextStyle(fontWeight: FontWeight.bold)
+            ),
+            subtitle: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                //description
-                Text("${alarmInfo.description}"), SizedBox(height: pad/2),
+                Expanded(child: RichText(
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  text: TextSpan(text: "\u23F0\t",
+                    style: TextStyle(
+                      color: MediaQuery.of(context).platformBrightness == Brightness.light?
+                          Colors.grey[700] : Colors.white,
+                    ),
+                    children: [
+                      //alarm date
+                      TextSpan(text: "${alarmInfo.date}\n\n",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
 
-                //alarm date
-                Row(children: [
-                  Icon(Icons.alarm), SizedBox(width: pad/3),
-                  Expanded(child: Text("${alarmInfo.date}",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  )),
-                ]), SizedBox(height: pad/4),
-
-                //location details
-                Row(children: [
-                  Icon(Icons.location_pin), SizedBox(width: pad/3),
-                  Expanded(child: Text(
-                    alarmInfo.location.isEmpty? "Location not specified" : "${alarmInfo.location}"
-                  )),
-                ]), SizedBox(height: pad/4),
-              ]
+                      //description
+                      TextSpan(text: alarmInfo.description,
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                    ]
+                  ),
+                )),
+              ],
             ),
 
             trailing: Column(
@@ -108,15 +109,14 @@ class AlarmsPage extends State<AlarmsList> {
                 Switch(
                   value: alarmInfo.shouldNotify,
                   onChanged: (value) {
-                    selected = alarmInfo.reference.id;
                     HapticFeedback.selectionClick();
+                    selected = alarmInfo.reference.id;
 
                     //toggle alarm switch on/off
                     setState(() {
+                      print("Toggle ringer on/off");
                       alarmInfo.shouldNotify = value;
                       db.updateData(alarmInfo, selected);
-
-                      print("Toggle alarm ${alarmInfo.toJson()}");
                     });
                   }
                 ),
@@ -124,13 +124,11 @@ class AlarmsPage extends State<AlarmsList> {
             ),
           ),
 
-          onTap: () {
-            selected = alarmInfo.reference.id;
+          onTap: () => getPreview(context, alarmInfo),
+          onLongPress: () {
+            //shortcut for editing selected alarms
             HapticFeedback.selectionClick();
-            print("Edit alarm ${alarmInfo.toJson()}");
-
-            //edit selected alarm
-            startForm(context, alarmInfo, selected);
+            startForm(context, "Edit alarm", alarmInfo);
           },
         ),
       ),
@@ -142,6 +140,7 @@ class AlarmsPage extends State<AlarmsList> {
 
         //delete selected alarm
         if (selected != null) {
+          print("Delete alarm from database");
           db.deleteData(selected);
           selected = null;
         }
@@ -149,9 +148,19 @@ class AlarmsPage extends State<AlarmsList> {
     );
   }
 
-  void startForm(BuildContext context, [AlarmInfo alarmInfo, String id=""]) async {
+  void startForm(BuildContext context, String title, [AlarmInfo alarmInfo]) async {
+    print("Filling out the form");
     await Navigator.of(context).push(new MaterialPageRoute(
-      builder: (BuildContext context) => new AlarmForm(alarmInfo: alarmInfo, refID: id),
+      builder: (context) => new AlarmForm(alarmInfo: alarmInfo, title: title),
+    ));
+
+    selected = null;
+  }
+
+  void getPreview(BuildContext context, AlarmInfo alarmInfo) async {
+    print("Showing alarm details");
+    await Navigator.of(context).push(new MaterialPageRoute(
+      builder: (context) => new AlarmPreview(alarmInfo: alarmInfo, isRinging: false),
     ));
 
     selected = null;
