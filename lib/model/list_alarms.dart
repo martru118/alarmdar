@@ -73,8 +73,8 @@ class AlarmsPage extends State<AlarmsList> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
         child: InkWell(
           child: ListTile(
-            leading: Text(alarmInfo.startTime.replaceFirst(RegExp(' '), '\n')),
-            title: Text(alarmInfo.name, textScaleFactor: 1.5,
+            leading: Text("${alarmInfo.startTime.replaceFirst(RegExp(' '), '\n')}"),
+            title: Text("${alarmInfo.name}", textScaleFactor: 1.5,
               style: TextStyle(fontWeight: FontWeight.bold)
             ),
             subtitle: Row(
@@ -95,7 +95,7 @@ class AlarmsPage extends State<AlarmsList> {
                       ),
 
                       //description
-                      TextSpan(text: alarmInfo.description,
+                      TextSpan(text: "${alarmInfo.description}",
                         style: TextStyle(fontStyle: FontStyle.italic),
                       ),
                     ]
