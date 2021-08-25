@@ -24,7 +24,7 @@ class Notifications {
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: false,
-      onDidReceiveLocalNotification: (int id, String title, String body, String payload) {
+      onDidReceiveLocalNotification: (id, title, body, payload) {
         print('$id/$title/$body/$payload');
         return null;
       },
