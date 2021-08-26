@@ -1,4 +1,4 @@
-import 'package:alarmdar/util/date_util.dart';
+import 'package:alarmdar/util/date_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:weekday_selector/weekday_selector.dart';
