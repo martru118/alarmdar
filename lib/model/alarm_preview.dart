@@ -6,11 +6,11 @@ import 'form_alarm.dart';
 
 class AlarmPreview extends StatefulWidget {
   final AlarmInfo alarmInfo;
-  final bool isRinging;
+  final bool ringing;
 
   AlarmPreview({Key key,
     @required this.alarmInfo,
-    @required this.isRinging,
+    @required this.ringing,
   }): super(key: key);
 
   @override
@@ -24,69 +24,71 @@ class PreviewsPage extends State<AlarmPreview> {
   //initialize ui
   AlarmInfo alarm;
   bool ringing;
-  String current;
+  String selected;
 
   @override
   void initState() {
     super.initState();
     alarm = widget.alarmInfo;
-    ringing = widget.isRinging;
+    ringing = widget.ringing;
 
     //get alarm id
-    current = alarm.reference.id;
+    selected = alarm.reference.id;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: buildAppBar(context, ringing),
-      body: ListView(
-        padding: EdgeInsets.all(pad/2),
-        children: [
-          //alarm name and description
-          Card(
-            elevation: pad/2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-            child: ListTile(
-              leading: const Icon(Icons.event),
-              title: Text("${alarm.name}", style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text("${alarm.description}"),
-            ),
-          ),
-
-          Card(
-            elevation: pad/2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-            child: Container(
-              padding: EdgeInsets.all(pad/2),
-              child: Column(
-                children: [
-                  //alarm date and time
-                  ListTile(leading: const Icon(Icons.access_time),
-                    title: Text("${alarm.date} at ${alarm.startTime}"),
-                  ),
-
-                  //location details
-                  ListTile(leading: const Icon(Icons.location_pin),
-                    title: Text(alarm.location.isEmpty?
-                        "Location not specified" : "${alarm.location}"
-                    ),
-                  ),
-
-                  //account details
-                  ListTile(leading: const Icon(Icons.person_rounded),
-                    title: Text("Account details"),
-                  ),
-                ]
+    return SafeArea(
+      child: Scaffold(
+        appBar: buildAppBar(context, ringing),
+        body: ListView(
+          padding: EdgeInsets.all(pad/2),
+          children: [
+            //alarm name and description
+            Card(
+              elevation: pad/2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+              child: ListTile(
+                leading: const Icon(Icons.event),
+                title: Text("${alarm.name}", style: TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text("${alarm.description}"),
               ),
             ),
-          ),
-        ]
-      ),
 
-      bottomNavigationBar: buildBottomBar(context, ringing),
-      floatingActionButton: Visibility(visible: !ringing, child: buildFab(context)),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+            Card(
+              elevation: pad/2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+              child: Container(
+                padding: EdgeInsets.all(pad/2),
+                child: Column(
+                  children: [
+                    //alarm date and time
+                    ListTile(leading: const Icon(Icons.access_time),
+                      title: Text("${alarm.date} at ${alarm.startTime}"),
+                    ),
+
+                    //location details
+                    ListTile(leading: const Icon(Icons.location_pin),
+                      title: Text(alarm.location.isEmpty?
+                          "Location not specified" : "${alarm.location}"
+                      ),
+                    ),
+
+                    //account details
+                    ListTile(leading: const Icon(Icons.person_rounded),
+                      title: Text("Account details"),
+                    ),
+                  ]
+                ),
+              ),
+            ),
+          ]
+        ),
+
+        bottomNavigationBar: buildBottomBar(context, ringing),
+        floatingActionButton: Visibility(visible: !ringing, child: buildFab(context)),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      ),
     );
   }
 
@@ -99,7 +101,7 @@ class PreviewsPage extends State<AlarmPreview> {
   }
   
   Widget buildBottomBar(BuildContext context, bool isRinging) {
-    //show alarm actions when ringing
+    //show ringer actions when alarm rings
     if (isRinging) {
       return BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -116,7 +118,7 @@ class PreviewsPage extends State<AlarmPreview> {
         ]
       );
 
-    //show
+    //show edit actions when not ringing
     } else {
       return BottomAppBar(
         color: Theme.of(context).primaryColor,
@@ -148,7 +150,7 @@ class PreviewsPage extends State<AlarmPreview> {
                 icon: const Icon(Icons.delete),
                 onPressed: () {
                   //delete current alarm
-                  db.deleteData(current);
+                  db.deleteData(selected);
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text("Alarm has been deleted"),
                   ));
@@ -171,19 +173,19 @@ class PreviewsPage extends State<AlarmPreview> {
         icon: const Icon(Icons.archive),
         onPressed: () {
           alarm.shouldNotify = false;
-          db.updateData(alarm, current);
+          db.updateData(alarm, selected);
           Navigator.pop(context);
         }
       );
 
-    //restore if alarm does not ring
+    //restore if alarm cannot ring
     } else {
       return FloatingActionButton.extended(
         label: Text("Restore"),
         icon: const Icon(Icons.restore),
         onPressed: () {
           alarm.shouldNotify = true;
-          db.updateData(alarm, current);
+          db.updateData(alarm, selected);
           Navigator.pop(context);
         }
       );
@@ -194,9 +196,9 @@ class PreviewsPage extends State<AlarmPreview> {
   void reload(BuildContext context) async {
     print("Reload the page");
 
-    AlarmInfo updated = await db.retrievebyID(current);
+    AlarmInfo updated = await db.retrievebyID(selected);
     Navigator.pushReplacement(context, MaterialPageRoute(
-      builder: (context) => new AlarmPreview(alarmInfo: updated, isRinging: ringing),
+      builder: (context) => new AlarmPreview(alarmInfo: updated, ringing: ringing),
     ));
   }
 

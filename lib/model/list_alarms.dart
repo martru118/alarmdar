@@ -28,21 +28,23 @@ class AlarmsPage extends State<AlarmsList> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: buildAppbar(context, widget.ongoing),
-      body: buildList(widget.ongoing),
-      floatingActionButton: Visibility(
-        visible: widget.ongoing,
-        child: FloatingActionButton(
-          tooltip: "New Alarm",
-          child: const Icon(Icons.add),
-          onPressed: () => startForm(context, "Set Alarm"),
-        ),
-      )
+    return SafeArea(
+      child: Scaffold(
+        appBar: buildAppBar(context, widget.ongoing),
+        body: buildList(widget.ongoing),
+        floatingActionButton: Visibility(
+          visible: widget.ongoing,
+          child: FloatingActionButton(
+            tooltip: "New Alarm",
+            child: const Icon(Icons.add),
+            onPressed: () => startForm(context, "Set Alarm"),
+          ),
+        )
+      ),
     );
   }
 
-  Widget buildAppbar(BuildContext context, bool isOngoing) {
+  Widget buildAppBar(BuildContext context, bool isOngoing) {
     //show ongoing alarms
     if (isOngoing) {
       return AppBar(title: Text(widget.title));
@@ -75,9 +77,9 @@ class AlarmsPage extends State<AlarmsList> {
     }
   }
 
-  Widget buildList(bool shouldNotify) {
+  Widget buildList(bool isOngoing) {
     return StreamBuilder<QuerySnapshot>(
-      stream: db.retrieveAll(shouldNotify),
+      stream: db.retrieveAll(isOngoing),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
           return CircularProgressIndicator();
@@ -182,7 +184,7 @@ class AlarmsPage extends State<AlarmsList> {
   void getPreview(BuildContext context, AlarmInfo alarmInfo) async {
     print("Showing alarm details");
     await Navigator.of(context).push(new MaterialPageRoute(
-      builder: (context) => new AlarmPreview(alarmInfo: alarmInfo, isRinging: false),
+      builder: (context) => new AlarmPreview(alarmInfo: alarmInfo, ringing: false),
     ));
 
     selected = null;

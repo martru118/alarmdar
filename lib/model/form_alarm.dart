@@ -76,145 +76,147 @@ class FormPage extends State<AlarmForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.title), leading: BackButton()),
-      body: Form(
-        key: formKey,
-        child: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: ListView(
-            padding: EdgeInsets.symmetric(horizontal: pad/2),
-            children: [
-              //time picker
-              Card(
-                elevation: pad/2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-                child: Container(
-                  height: MediaQuery.of(context).size.height/3,
-                  child: CupertinoTheme(
-                    data: CupertinoThemeData(brightness: Theme.of(context).brightness),
-                    child: CupertinoDatePicker(
-                      mode: CupertinoDatePickerMode.time,
-                      initialDateTime: startTime,
-                      use24hFormat: MediaQuery.of(context).alwaysUse24HourFormat,
-                      onDateTimeChanged: (date) {
-                        HapticFeedback.selectionClick();
-                        startTime = date;
-                      },
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(title: Text(widget.title), leading: BackButton()),
+        body: Form(
+          key: formKey,
+          child: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: ListView(
+              padding: EdgeInsets.symmetric(horizontal: pad/2),
+              children: [
+                //time picker
+                Card(
+                  elevation: pad/2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height/3,
+                    child: CupertinoTheme(
+                      data: CupertinoThemeData(brightness: Theme.of(context).brightness),
+                      child: CupertinoDatePicker(
+                        mode: CupertinoDatePickerMode.time,
+                        initialDateTime: startTime,
+                        use24hFormat: MediaQuery.of(context).alwaysUse24HourFormat,
+                        onDateTimeChanged: (date) {
+                          HapticFeedback.selectionClick();
+                          startTime = date;
+                        },
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              //options for repeating alarms
-              WeekdaySelector(
-                elevation: pad/2,
-                selectedElevation: pad/3,
-                textStyle: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).accentColor),
-                selectedTextStyle: TextStyle(fontWeight: FontWeight.bold),
-                values: daysList,
-                onChanged: (day) {
-                  HapticFeedback.selectionClick();
+                //options for repeating alarms
+                WeekdaySelector(
+                  elevation: pad/2,
+                  selectedElevation: pad/3,
+                  textStyle: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).accentColor),
+                  selectedTextStyle: TextStyle(fontWeight: FontWeight.bold),
+                  values: daysList,
+                  onChanged: (day) {
+                    HapticFeedback.selectionClick();
 
-                  setState(() {
-                    //select weekdays for repeating alarms
-                    daysList[day % 7] = !daysList[day % 7];
-                    getNextDate();
-                  });
-                },
-              ),
+                    setState(() {
+                      //select weekdays for repeating alarms
+                      daysList[day % 7] = !daysList[day % 7];
+                      getNextDate();
+                    });
+                  },
+                ),
 
-              Card(
-                elevation: pad/2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-                child: Container(
-                  padding: EdgeInsets.all(pad),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      //show preview for next alarm
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("Alarm will ring on "),
-                          Text("$startDate", style: TextStyle(fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-
-                      //name textfield
-                      TextFormField(
-                        controller: alarmName,
-                        textCapitalization: TextCapitalization.sentences,
-                        validator: (value) {
-                          if (value.isEmpty) {return "Enter a name for this alarm";}
-                          return null;
-                        },
-                        decoration: const InputDecoration(
-                          border: UnderlineInputBorder(),
-                          icon: const Icon(Icons.event),
-                          labelText: "Name",
+                Card(
+                  elevation: pad/2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+                  child: Container(
+                    padding: EdgeInsets.all(pad),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        //show preview for next alarm
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Alarm will ring on "),
+                            Text("$startDate", style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
                         ),
-                      ),
 
-                      //description textfield
-                      TextFormField(
-                        controller: description,
-                        keyboardType: TextInputType.multiline,
-                        textCapitalization: TextCapitalization.sentences,
-                        maxLines: null,
-                        validator: (value) {
-                          if (value.isEmpty) {return "Enter a description for this alarm";}
-                          return null;
-                        },
-                        decoration: const InputDecoration(
-                          border: UnderlineInputBorder(),
-                          icon: const Icon(Icons.list),
-                          labelText: "Description",
+                        //name textfield
+                        TextFormField(
+                          controller: alarmName,
+                          textCapitalization: TextCapitalization.sentences,
+                          validator: (value) {
+                            if (value.isEmpty) {return "Enter a name for this alarm";}
+                            return null;
+                          },
+                          decoration: const InputDecoration(
+                            border: UnderlineInputBorder(),
+                            icon: const Icon(Icons.event),
+                            labelText: "Name",
+                          ),
                         ),
-                      ),
 
-                      //location textfield
-                      TextField(
-                        controller: location,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: const InputDecoration(
-                          border: UnderlineInputBorder(),
-                          icon: const Icon(Icons.location_on),
-                          labelText: "Location (optional)",
+                        //description textfield
+                        TextFormField(
+                          controller: description,
+                          keyboardType: TextInputType.multiline,
+                          textCapitalization: TextCapitalization.sentences,
+                          maxLines: null,
+                          validator: (value) {
+                            if (value.isEmpty) {return "Enter a description for this alarm";}
+                            return null;
+                          },
+                          decoration: const InputDecoration(
+                            border: UnderlineInputBorder(),
+                            icon: const Icon(Icons.list),
+                            labelText: "Description",
+                          ),
                         ),
-                      ),
 
-                      //sync switch
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text("Sync to Google Calendar"),
-                          Switch(value: sync, onChanged: null),
-                        ]
-                      ),
-                    ]
+                        //location textfield
+                        TextField(
+                          controller: location,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: const InputDecoration(
+                            border: UnderlineInputBorder(),
+                            icon: const Icon(Icons.location_on),
+                            labelText: "Location (optional)",
+                          ),
+                        ),
+
+                        //sync switch
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text("Sync to Google Calendar"),
+                            Switch(value: sync, onChanged: null),
+                          ]
+                        ),
+                      ]
+                    ),
                   ),
                 ),
-              ),
-            ]
+              ]
+            ),
           ),
         ),
-      ),
 
-      floatingActionButton: new FloatingActionButton(
-        tooltip: "Save Changes",
-        child: const Icon(Icons.save),
-        onPressed: () {
-          //validate form
-          if (formKey.currentState.validate()) {
-            setAlarm(alarmName.text, description.text, location.text);
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text("Alarm has been set"),
-            ));
+        floatingActionButton: new FloatingActionButton(
+          tooltip: "Save Changes",
+          child: const Icon(Icons.save),
+          onPressed: () {
+            //validate form
+            if (formKey.currentState.validate()) {
+              setAlarm(alarmName.text, description.text, location.text);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text("Alarm has been set"),
+              ));
 
-            Navigator.pop(context);
+              Navigator.pop(context);
+            }
           }
-        }
+        ),
       ),
     );
   }
