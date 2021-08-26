@@ -1,4 +1,4 @@
-import 'package:alarmdar/model/firebase_utils.dart';
+import 'package:alarmdar/util/firebase_utils.dart';
 import 'package:flutter/material.dart';
 
 import 'alarm_info.dart';
@@ -11,7 +11,7 @@ class AlarmPreview extends StatefulWidget {
   AlarmPreview({Key key,
     @required this.alarmInfo,
     @required this.isRinging,
-  });
+  }): super(key: key);
 
   @override
   State<StatefulWidget> createState() => PreviewsPage();
@@ -39,7 +39,7 @@ class PreviewsPage extends State<AlarmPreview> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(context),
+      appBar: buildAppBar(context, ringing),
       body: ListView(
         padding: EdgeInsets.all(pad/2),
         children: [
@@ -84,23 +84,23 @@ class PreviewsPage extends State<AlarmPreview> {
         ]
       ),
 
-      bottomNavigationBar: buildBottomBar(context),
+      bottomNavigationBar: buildBottomBar(context, ringing),
       floatingActionButton: Visibility(visible: !ringing, child: buildFab(context)),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
-  Widget buildAppBar(BuildContext context) {
+  Widget buildAppBar(BuildContext context, bool isRinging) {
     //change app bar when alarm rings
-    if (ringing)
+    if (isRinging)
       return AppBar(title: Text("Alarmdar"), centerTitle: true);
     else
       return AppBar(leading: BackButton(), title: Text("Alarm Details"));
   }
   
-  Widget buildBottomBar(BuildContext context) {
-    //change bottom bar when alarm rings
-    if (ringing) {
+  Widget buildBottomBar(BuildContext context, bool isRinging) {
+    //show alarm actions when ringing
+    if (isRinging) {
       return BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         unselectedItemColor: Theme.of(context).accentColor,
@@ -116,6 +116,7 @@ class PreviewsPage extends State<AlarmPreview> {
         ]
       );
 
+    //show
     } else {
       return BottomAppBar(
         color: Theme.of(context).primaryColor,
@@ -163,7 +164,7 @@ class PreviewsPage extends State<AlarmPreview> {
   }
 
   Widget buildFab(BuildContext context) {
-    //change fab if an alarm would ring
+    //archive if alarm can ring
     if (alarm.shouldNotify) {
       return FloatingActionButton.extended(
         label: Text("Archive"),
@@ -175,6 +176,7 @@ class PreviewsPage extends State<AlarmPreview> {
         }
       );
 
+    //restore if alarm does not ring
     } else {
       return FloatingActionButton.extended(
         label: Text("Restore"),

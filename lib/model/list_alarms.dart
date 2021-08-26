@@ -4,13 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'alarm_info.dart';
-import 'firebase_utils.dart';
+import '../util/firebase_utils.dart';
 import 'form_alarm.dart';
 
 
 class AlarmsList extends StatefulWidget {
-  AlarmsList({Key key, this.title}): super(key: key);
   final String title;
+  final bool ongoing;
+
+  AlarmsList({Key key,
+    @required this.title,
+    @required this.ongoing,
+  }): super(key: key);
 
   @override
   AlarmsPage createState() => AlarmsPage();
@@ -24,30 +29,55 @@ class AlarmsPage extends State<AlarmsList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title),
-        actions: [
-          IconButton(icon: Icon(Icons.account_circle),
-            tooltip: "Account Settings",
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text("Login to Google Calendar"),
-              ));
-            },
-          )
-        ],
-      ),
-      body: buildList(),
-      floatingActionButton: new FloatingActionButton(
-        tooltip: "New Alarm",
-        child: const Icon(Icons.add),
-        onPressed: () => startForm(context, "Set Alarm"),
-      ),
+      appBar: buildAppbar(context, widget.ongoing),
+      body: buildList(widget.ongoing),
+      floatingActionButton: Visibility(
+        visible: widget.ongoing,
+        child: FloatingActionButton(
+          tooltip: "New Alarm",
+          child: const Icon(Icons.add),
+          onPressed: () => startForm(context, "Set Alarm"),
+        ),
+      )
     );
   }
 
-  Widget buildList() {
+  Widget buildAppbar(BuildContext context, bool isOngoing) {
+    //show ongoing alarms
+    if (isOngoing) {
+      return AppBar(title: Text(widget.title));
+
+    //show archived alarms
+    } else {
+      return AppBar(title: Text(widget.title),
+        actions: [
+          PopupMenuButton(
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                child: ListTile(
+                  leading: Icon(Icons.restore),
+                  title: Text("Restore All"),
+                ),
+                value: 1,
+              ),
+              PopupMenuItem(
+                child: ListTile(
+                  leading: Icon(Icons.delete),
+                  title: Text("Delete All"),
+                ),
+                value: 2,
+              ),
+            ],
+            onSelected: null,
+          ),
+        ]
+      );
+    }
+  }
+
+  Widget buildList(bool shouldNotify) {
     return StreamBuilder<QuerySnapshot>(
-      stream: db.retrieveAll(),
+      stream: db.retrieveAll(shouldNotify),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
           return CircularProgressIndicator();
@@ -104,47 +134,39 @@ class AlarmsPage extends State<AlarmsList> {
               ],
             ),
 
-            trailing: Column(
-              children: [
-                Switch(
-                  value: alarmInfo.shouldNotify,
-                  onChanged: (value) {
-                    HapticFeedback.selectionClick();
-                    selected = alarmInfo.reference.id;
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Switch(
+                value: alarmInfo.shouldNotify,
+                onChanged: (value) {
+                  selected = alarmInfo.reference.id;
+                  HapticFeedback.selectionClick();
 
-                    //toggle alarm switch on/off
-                    setState(() {
-                      print("Toggle ringer on/off");
-                      alarmInfo.shouldNotify = value;
-                      db.updateData(alarmInfo, selected);
-                    });
-                  }
-                ),
-              ],
-            ),
+                  //toggle alarm switch on/off
+                  setState(() {
+                    print("Toggle ringer on/off");
+
+                    alarmInfo.shouldNotify = value;
+                    db.updateData(alarmInfo, selected);
+                    selected = null;
+                  });
+
+                }
+              ),
+            ],
           ),
+        ),
 
           onTap: () => getPreview(context, alarmInfo),
           onLongPress: () {
             //shortcut for editing selected alarms
             HapticFeedback.selectionClick();
-            startForm(context, "Edit alarm", alarmInfo);
+            startForm(context, "Edit Alarm", alarmInfo);
           },
         ),
       ),
-      onDismissed: (direction) {
-        selected = alarmInfo.reference.id;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Alarm has been deleted"),
-        ));
-
-        //delete selected alarm
-        if (selected != null) {
-          print("Delete alarm from database");
-          db.deleteData(selected);
-          selected = null;
-        }
-      },
     );
   }
 

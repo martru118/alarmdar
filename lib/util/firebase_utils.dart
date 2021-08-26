@@ -1,14 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'alarm_info.dart';
+import '../model/alarm_info.dart';
 
 class AlarmModel {
   final db = FirebaseFirestore.instance;
   final String collectionPath = "alarms";
 
   //get alarms from Cloud Firestore
-  Stream<QuerySnapshot> retrieveAll() {
+  Stream<QuerySnapshot> retrieveAll(bool shouldNotify) {
     return db.collection(collectionPath).orderBy("timestamp").snapshots();
+    //return db.collection(collectionPath).where("notify", isEqualTo: shouldNotify).orderBy("timestamp").snapshots();
   }
 
   //get specific alarms by reference ID

@@ -33,7 +33,7 @@ class Main extends StatelessWidget {
               visualDensity: VisualDensity.adaptivePlatformDensity,
             ),
             themeMode: ThemeMode.system,
-            home: AlarmsList(title: title),
+            home: AlarmsList(title: title, ongoing: true),
           );
         } else {
           return CircularProgressIndicator();

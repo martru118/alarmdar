@@ -1,3 +1,4 @@
+import 'package:alarmdar/util/date_util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:weekday_selector/weekday_selector.dart';
@@ -6,7 +7,7 @@ import 'alarm_info.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'firebase_utils.dart';
+import '../util/firebase_utils.dart';
 
 
 class AlarmForm extends StatefulWidget {
@@ -16,7 +17,7 @@ class AlarmForm extends StatefulWidget {
   AlarmForm({Key key,
     @required this.alarmInfo,
     @required this.title,
-  });
+  }): super(key: key);
 
   @override
   FormPage createState() => FormPage();
@@ -24,6 +25,7 @@ class AlarmForm extends StatefulWidget {
 
 class FormPage extends State<AlarmForm> {
   final db = AlarmModel();
+  final helper = DateTimeHelper();
   final formKey = new GlobalKey<FormState>();
   static const double pad = 12;
 
@@ -45,7 +47,7 @@ class FormPage extends State<AlarmForm> {
       selected = "";
       startTime = new DateTime.now();
       daysList = List.filled(7, false, growable: false);
-      startDate = whentoRing();
+      getNextDate();
 
       alarmName = TextEditingController(text: "");
       description = TextEditingController(text: "");
@@ -55,7 +57,8 @@ class FormPage extends State<AlarmForm> {
       selected = alarm.reference.id;
       startTime = DateFormat.jm().parse(alarm.startTime);
       daysList = alarm.weekdays.map((i) => i as bool).toList(growable: false);
-      startDate = whentoRing();
+      startDate = alarm.date;
+      timestamp = alarm.timestamp;
 
       alarmName = TextEditingController(text: alarm.name);
       description = TextEditingController(text: alarm.description);
@@ -116,7 +119,7 @@ class FormPage extends State<AlarmForm> {
                   setState(() {
                     //select weekdays for repeating alarms
                     daysList[day % 7] = !daysList[day % 7];
-                    startDate = whentoRing();
+                    getNextDate();
                   });
                 },
               ),
@@ -217,31 +220,11 @@ class FormPage extends State<AlarmForm> {
   }
 
 
-  //determines the date for the next alarm
-  String whentoRing() {
-    final DateTime today = DateTime.now();
-    DateTime nextDate;
-
-    if (daysList.where((i) => !i).length == 7) {
-      //alarm rings tomorrow if no weekdays are selected
-      nextDate = DateTime(today.year, today.month, today.day + 1);
-    } else {
-      for (int wd = 0; wd < 7; wd++) {
-        if (daysList[(today.weekday + wd) % 7]) {
-          //alarm rings on the next selected weekday
-          nextDate = DateTime(today.year, today.month, today.day + wd);
-          break;
-        }
-      }
-    }
-
-    timestamp = getTimeStamp(nextDate, startTime);
-    return DateFormat.MMMEd().format(nextDate);
-  }
-
-  //convert alarm date and time to unix timestamp
-  int getTimeStamp(DateTime date, DateTime time) {
-    return DateTime(date.year, date.month, date.day, time.hour, time.minute).millisecondsSinceEpoch;
+  //get the date and timestamp for the next alarm
+  void getNextDate() {
+    DateTime next = helper.whentoRing(daysList);
+    startDate = DateFormat.MMMEd().format(next);
+    timestamp = helper.getTimeStamp(next, startTime);
   }
 
   //save alarm details to database
