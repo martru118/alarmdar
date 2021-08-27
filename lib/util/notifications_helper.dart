@@ -1,44 +1,29 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
-class Notifications {
-  final channelId = 'testNotifications';
-  final channelName = 'Test Notifications';
-  final channelDescription = 'Test Notification Channel';
+class NotificationService {
+  final String channelId = 'alarm';
+  final String channelName = 'Alarms';
+  final String channelDescription = 'Alarms for your reminders';
+  NotificationDetails channelInfo;
 
   var localNotifications;
-
-  NotificationDetails platformChannelInfo;
   var notificationId = 100;
 
   Future<void> init() async {
     localNotifications = FlutterLocalNotificationsPlugin();
-    if (Platform.isIOS) {permissionsIOS();}
 
     //plugin setup
-    var initAndroid = AndroidInitializationSettings('mipmap/ic_launcher');
-    var initIos = IOSInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: false,
-      onDidReceiveLocalNotification: (id, title, body, payload) {
-        print('$id/$title/$body/$payload');
-        return null;
-      },
-    );
-    var initSettings = InitializationSettings(
-      android: initAndroid,
-      iOS: initIos,
-    );
+    var initAndroid = AndroidInitializationSettings('app_icon');
+    var initSettings = InitializationSettings(android: initAndroid);
     localNotifications.initialize(
       initSettings,
       onSelectNotification: onSelectNotification,
     );
 
-    // setup a notification channel
+    //setup a notification channel
     var androidChannel = AndroidNotificationDetails(
       channelId,
       channelName,
@@ -47,21 +32,8 @@ class Notifications {
       priority: Priority.defaultPriority,
       ticker: 'ticker',
     );
-    var iosChannel = IOSNotificationDetails();
 
-    platformChannelInfo = NotificationDetails(
-      android: androidChannel,
-      iOS: iosChannel,
-    );
-  }
-
-  //set permissions for IOS platform
-  void permissionsIOS() {
-    localNotifications.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>().requestPermissions(
-      alert: false,
-      badge: true,
-      sound: true,
-    );
+    channelInfo = NotificationDetails(android: androidChannel);
   }
 
   Future onSelectNotification(var payload) async {
@@ -70,31 +42,21 @@ class Notifications {
     }
   }
 
-  sendNow(String title, String body, String payload) {
-    print(localNotifications);
-    localNotifications.show(
-      notificationId++,
-      title,
-      body,
-      platformChannelInfo,
-      payload: payload,
-    );
-  }
-
-  sendLater(String title, String body, tz.TZDateTime when, String payload) {
+  //schedule a notification
+  void schedule(String title, String body, tz.TZDateTime when, String payload) {
     localNotifications.zonedSchedule(
       notificationId++,
       title,
       body,
       when,
-      platformChannelInfo,
+      channelInfo,
       payload: payload,
       uiLocalNotificationDateInterpretation: null,
       androidAllowWhileIdle: true,
     );
   }
 
-  Future<List<PendingNotificationRequest>> pending() async {
+  Future<List<PendingNotificationRequest>> getPendingRequests() async {
     return localNotifications.pendingNotificationRequests();
   }
 }
