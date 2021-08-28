@@ -1,18 +1,21 @@
-import 'package:intl/intl.dart';
-
 class DateTimeHelper {
   //determines the date for the next alarm
-  DateTime whentoRing(List<bool> weekdays) {
+  DateTime whentoRing(List<bool> weekdays, int offset) {
     final DateTime today = new DateTime.now();
+    bool isTomorrow = weekdays.where((i) => !i).length == 7 && offset == 0;
 
-    if (weekdays.where((i) => !i).length == 7) {
-      //alarm rings tomorrow if no weekdays are selected
-      return DateTime(today.year, today.month, today.day + 1);
+    //check if calculation is offset by one day
+    if (isTomorrow) {
+      switch (offset) {
+        case 0: return today.add(new Duration(days: 1));
+        default: return null;
+      }
+
+    //alarm rings on the next selected weekday
     } else {
-      for (int wd = 0; wd < 7; wd++) {
-        //alarm rings on the next selected weekday
+      for (int wd = offset; wd < 7 + offset; wd++) {
         if (weekdays[(today.weekday + wd) % 7])
-          return DateTime(today.year, today.month, today.day + wd);
+          return today.add(new Duration(days: wd));
       }
     }
   }
