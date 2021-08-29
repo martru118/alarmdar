@@ -1,4 +1,5 @@
 import 'package:alarmdar/util/date_utils.dart';
+import 'package:alarmdar/util/notifications_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:weekday_selector/weekday_selector.dart';
@@ -24,18 +25,18 @@ class AlarmForm extends StatefulWidget {
 }
 
 class FormPage extends State<AlarmForm> {
-  final db = AlarmModel();
   final helper = DateTimeHelper();
   final formKey = new GlobalKey<FormState>();
   static const double pad = 12;
 
-  String selected;
-  DateTime startTime;
-  String startDate;
+  //initialize ui
+  String refID;
+  int notifID;
+  DateTime startTime, startDate;
+  String timeString, dateString;
   int timestamp;
   List<bool> daysList;
   var alarmName, description, location;
-  bool sync = false;
 
   @override
   void initState() {
@@ -44,26 +45,34 @@ class FormPage extends State<AlarmForm> {
 
     if (alarm == null) {
       //initialize widgets in form
-      selected = "";
+      refID = "";
+      notifID = DateTime.now().millisecondsSinceEpoch;
+
       startTime = new DateTime.now();
+      startDate = startTime;
       daysList = List.filled(7, false, growable: false);
-      getNextDate();
+      timestamp = helper.getTimeStamp(startDate, startTime);
 
       alarmName = TextEditingController(text: "");
       description = TextEditingController(text: "");
       location = TextEditingController(text: "");
     } else {
       //autofill form
-      selected = alarm.reference.id;
+      refID = alarm.reference.id;
+      notifID = alarm.notifID;
+
       startTime = DateFormat.jm().parse(alarm.startTime);
+      startDate = DateFormat.MMMEd().parse(alarm.date);
       daysList = alarm.weekdays.map((i) => i as bool).toList(growable: false);
-      startDate = alarm.date;
       timestamp = alarm.timestamp;
 
       alarmName = TextEditingController(text: alarm.name);
       description = TextEditingController(text: alarm.description);
       location = TextEditingController(text: alarm.location);
     }
+
+    timeString = TimeOfDay.fromDateTime(startTime).format(context);
+    dateString = DateFormat.MMMEd().format(startDate);
   }
 
   @override
@@ -86,6 +95,7 @@ class FormPage extends State<AlarmForm> {
             child: ListView(
               padding: EdgeInsets.symmetric(horizontal: pad/2),
               children: [
+
                 //time picker
                 Card(
                   elevation: pad/2,
@@ -101,6 +111,7 @@ class FormPage extends State<AlarmForm> {
                         onDateTimeChanged: (date) {
                           HapticFeedback.selectionClick();
                           startTime = date;
+                          timeString = TimeOfDay.fromDateTime(startTime).format(context);
                         },
                       ),
                     ),
@@ -120,7 +131,11 @@ class FormPage extends State<AlarmForm> {
                     setState(() {
                       //select weekdays for repeating alarms
                       daysList[day % 7] = !daysList[day % 7];
-                      getNextDate();
+
+                      //get the date for the next alarm
+                      startDate = helper.whentoRing(daysList, 0);
+                      timestamp = helper.getTimeStamp(startDate, startTime);
+                      dateString = DateFormat.MMMEd().format(startDate);
                     });
                   },
                 ),
@@ -133,12 +148,13 @@ class FormPage extends State<AlarmForm> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+
                         //show preview for next alarm
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text("Alarm will ring on "),
-                            Text("$startDate", style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text("$dateString", style: TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
 
@@ -185,12 +201,35 @@ class FormPage extends State<AlarmForm> {
                           ),
                         ),
 
-                        //sync switch
+                        //save button
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Text("Sync to Google Calendar"),
-                            Switch(value: sync, onChanged: null),
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.save),
+                              label: Text("Save"),
+                              onPressed: () {
+                                int currentTime = DateTime.now().millisecondsSinceEpoch;
+
+                                //validate form
+                                if (timestamp > currentTime) {
+                                  if (formKey.currentState.validate()) {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                      content: Text("Alarm has been set"),
+                                    ));
+
+                                    setAlarm(alarmName.text, description.text, location.text);
+                                    Navigator.pop(context);
+                                  }
+
+                                //form is invalid due to time chosen
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text("Please choose a time in the future"),
+                                  ));
+                                }
+                              }
+                            ),
                           ]
                         ),
                       ]
@@ -201,55 +240,38 @@ class FormPage extends State<AlarmForm> {
             ),
           ),
         ),
-
-        floatingActionButton: new FloatingActionButton(
-          tooltip: "Save Changes",
-          child: const Icon(Icons.save),
-          onPressed: () {
-            //validate form
-            if (formKey.currentState.validate()) {
-              setAlarm(alarmName.text, description.text, location.text);
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text("Alarm has been set"),
-              ));
-
-              Navigator.pop(context);
-            }
-          }
-        ),
       ),
     );
   }
 
-
-  //get the date and timestamp for the next alarm
-  void getNextDate() {
-    DateTime next = helper.whentoRing(daysList);
-    startDate = DateFormat.MMMEd().format(next);
-    timestamp = helper.getTimeStamp(next, startTime);
-  }
-
   //save alarm details to database
   void setAlarm(String name, String desc, String loc) {
+    final db = new AlarmModel();
+    final notifications = NotificationService();
+
     AlarmInfo alarm = new AlarmInfo(
-      startTime: TimeOfDay.fromDateTime(startTime).format(context),
+      notifID: notifID,
+      startTime: timeString,
       weekdays: daysList,
-      date: startDate,
+      date: dateString,
       timestamp: timestamp,
       name: name,
       description: desc,
       location: loc,
-      gSync: sync,
       shouldNotify: true,
     );
 
     //send alarm to database
-    if (selected.isEmpty) {
+    if (refID.isEmpty) {
       print("Store alarm in database");
+
       db.storeData(alarm);
+      notifications.schedule(alarm, timestamp);
     } else {
       print("Update alarm in database");
-      db.updateData(alarm, selected);
+
+      db.updateData(alarm, refID);
+      notifications.schedule(alarm, timestamp);
     }
   }
 }

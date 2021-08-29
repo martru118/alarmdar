@@ -1,16 +1,19 @@
+import 'package:alarmdar/util/date_utils.dart';
 import 'package:alarmdar/util/firebase_utils.dart';
+import 'package:alarmdar/util/notifications_helper.dart';
+import 'package:alarmdar/util/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'alarm_info.dart';
-import 'form_alarm.dart';
 
 class AlarmPreview extends StatefulWidget {
   final AlarmInfo alarmInfo;
-  final bool ringing;
+  final bool isRinging;
 
   AlarmPreview({Key key,
     @required this.alarmInfo,
-    @required this.ringing,
+    @required this.isRinging,
   }): super(key: key);
 
   @override
@@ -19,21 +22,25 @@ class AlarmPreview extends StatefulWidget {
 
 class PreviewsPage extends State<AlarmPreview> {
   final db = new AlarmModel();
+  final helper = new DateTimeHelper();
+  final notifications = new NotificationService();
   static const double pad = 14;
 
   //initialize ui
   AlarmInfo alarm;
   bool ringing;
   String selected;
+  int notifID;
 
   @override
   void initState() {
     super.initState();
     alarm = widget.alarmInfo;
-    ringing = widget.ringing;
+    ringing = widget.isRinging;
 
-    //get alarm id
+    //get alarm and notification id
     selected = alarm.reference.id;
+    notifID = alarm.notifID;
   }
 
   @override
@@ -86,7 +93,7 @@ class PreviewsPage extends State<AlarmPreview> {
         ),
 
         bottomNavigationBar: buildBottomBar(context, ringing),
-        floatingActionButton: Visibility(visible: !ringing, child: buildFab(context)),
+        floatingActionButton: buildFab(context),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       ),
     );
@@ -115,7 +122,42 @@ class PreviewsPage extends State<AlarmPreview> {
             label: "Dismiss",
             icon: Icon(Icons.close),
           ),
-        ]
+        ],
+        onTap: (index) {
+          switch (index) {
+            //snooze alarm
+            case 0:
+              //schedule new notification for 5 minutes later
+              DateTime snooze = new DateTime.now().add(new Duration(minutes: 5));
+              notifications.schedule(alarm, snooze.millisecondsSinceEpoch);
+              break;
+
+            //dismiss alarm
+            case 1:
+              DateTime next = helper.whentoRing(alarm.weekdays, 1);
+
+              if (next == null) {
+                //turn off alarm if there are no more selected weekdays
+                alarm.shouldNotify = false;
+                db.updateData(alarm, selected);
+                notifications.cancel(notifID);
+              } else {
+                DateTime time = DateFormat.jm().parse(alarm.startTime);
+                int newStamp = helper.getTimeStamp(next, time);
+
+                //schedule next alarm
+                alarm.date = DateFormat.MMMEd().format(next);
+                alarm.timestamp = newStamp;
+                db.updateData(alarm, selected);
+                notifications.schedule(alarm, newStamp);
+              }
+
+              break;
+          }
+
+          //close preview
+          Navigator.of(context).pop();
+        }
       );
 
     //show edit actions when not ringing
@@ -125,41 +167,41 @@ class PreviewsPage extends State<AlarmPreview> {
         shape: null,
         child: IconTheme(
           data: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
-          child: Row(
-            children: <Widget>[
-              IconButton(
-                tooltip: 'Refresh',
-                icon: const Icon(Icons.refresh),
-                onPressed: () {
-                  //reload the page
-                  reload(context);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text("Checking for updates..."),
-                  ));
-                },
-              ), Spacer(),
+          child: Row(children: [
+            IconButton(
+              tooltip: 'Refresh',
+              icon: const Icon(Icons.refresh),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text("Checking for updates..."),
+                ));
 
-              IconButton(
-                tooltip: 'Edit',
-                icon: const Icon(Icons.edit),
-                onPressed: () => startForm(context, alarm),
-              ),
+                //reload the page
+                reload(context);
+              },
+            ), Spacer(),
 
-              IconButton(
-                tooltip: 'Delete',
-                icon: const Icon(Icons.delete),
-                onPressed: () {
-                  //delete current alarm
-                  db.deleteData(selected);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text("Alarm has been deleted"),
-                  ));
+            IconButton(
+              tooltip: 'Edit',
+              icon: const Icon(Icons.edit),
+              onPressed: () => startForm(context, alarm),
+            ),
 
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
+            IconButton(
+              tooltip: 'Delete',
+              icon: const Icon(Icons.delete),
+              onPressed: () {
+                //delete current alarm
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text("Alarm has been deleted"),
+                ));
+
+                db.deleteData(selected);
+                notifications.cancel(notifID);
+                Navigator.pop(context);
+              },
+            ),
+          ]),
         ),
       );
     }
@@ -172,8 +214,10 @@ class PreviewsPage extends State<AlarmPreview> {
         label: Text("Archive"),
         icon: const Icon(Icons.archive),
         onPressed: () {
+          //turn off alarm
           alarm.shouldNotify = false;
           db.updateData(alarm, selected);
+          notifications.cancel(notifID);
           Navigator.pop(context);
         }
       );
@@ -184,9 +228,31 @@ class PreviewsPage extends State<AlarmPreview> {
         label: Text("Restore"),
         icon: const Icon(Icons.restore),
         onPressed: () {
-          alarm.shouldNotify = true;
-          db.updateData(alarm, selected);
-          Navigator.pop(context);
+          int currentTime = DateTime.now().millisecondsSinceEpoch;
+
+          //alarm is in the future
+          if (alarm.timestamp > currentTime) {
+            //get the date for the next alarm
+            DateTime next = helper.whentoRing(alarm.weekdays, 0);
+            DateTime time = DateFormat.jm().parse(alarm.startTime);
+
+            //update alarm info
+            alarm.date = DateFormat.MMMEd().format(next);
+            alarm.timestamp = helper.getTimeStamp(next, time);
+            alarm.shouldNotify = true;
+            db.updateData(alarm, selected);
+
+            //schedule alarm
+            notifications.schedule(alarm, alarm.timestamp);
+            Navigator.pop(context);
+
+          //alarm is in the past
+          } else {
+            startForm(context, alarm);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text("Please choose a time in the future"),
+            ));
+          }
         }
       );
     }
@@ -194,18 +260,23 @@ class PreviewsPage extends State<AlarmPreview> {
 
   //get updated alarm from database
   void reload(BuildContext context) async {
-    print("Reload the page");
+    String route = "preview";
+    print("AlarmPreview/reload");
 
     AlarmInfo updated = await db.retrievebyID(selected);
-    Navigator.pushReplacement(context, MaterialPageRoute(
-      builder: (context) => new AlarmPreview(alarmInfo: updated, ringing: ringing),
+    Navigator.pushReplacementNamed(context, route, arguments: ScreenArguments(
+      alarmInfo: updated,
+      isRinging: ringing,
     ));
   }
 
   void startForm(BuildContext context, AlarmInfo alarmInfo) async {
-    print("Filling out the form");
-    await Navigator.of(context).push(new MaterialPageRoute(
-      builder: (context) => new AlarmForm(alarmInfo: alarmInfo, title: "Edit Alarm"),
+    String route = "form";
+    print("AlarmPreview/startForm::alarmInfo = ${alarmInfo.toJson()}");
+    
+    await Navigator.of(context).pushNamed(route, arguments: ScreenArguments(
+      alarmInfo: alarmInfo,
+      title: "Edit Alarm",
     ));
 
     //update alarm information
