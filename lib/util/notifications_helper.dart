@@ -1,13 +1,14 @@
-import 'dart:io' show Platform;
-
 import 'package:alarmdar/model/alarm_info.dart';
+import 'package:alarmdar/model/alarm_preview.dart';
+import 'package:alarmdar/util/firebase_utils.dart';
+import 'package:alarmdar/util/routes.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
-  final String channelId = 'alarm';
+  final String channelId = 'alarmsChannel';
   final String channelName = 'Alarms';
   final String channelDescription = 'An alarm that rings when you have a reminder';
 
@@ -34,16 +35,21 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.max,
       fullScreenIntent: true,
+      playSound: true,
       sound: RawResourceAndroidNotificationSound("ringtone.webm"),
-      timeoutAfter: 120000,
     );
 
     channelInfo = NotificationDetails(android: androidChannel, iOS: null);
   }
 
   Future onSelectNotification(var payload) async {
+    final db = new AlarmModel();
+    print("Notification has been selected");
+
+    //show preview when alarm rings
     if (payload != null) {
-      print('onSelectNotification::payload = $payload');
+      AlarmInfo alarmInfo = await db.retrievebyID(payload);
+      RouteGenerator.push(AlarmPreview(alarmInfo: alarmInfo, isRinging: true));
     }
   }
 
@@ -66,7 +72,7 @@ class NotificationService {
       alarmInfo.description,
       when,
       channelInfo,
-      payload: alarmInfo.toJson(),
+      payload: alarmInfo.reference.id,
       androidAllowWhileIdle: true,
     );
   }
