@@ -1,6 +1,9 @@
-import 'package:alarmdar/model/list_alarms.dart';
+import 'package:alarmdar/util/notifications_helper.dart';
+import 'package:alarmdar/util/routes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+
+import 'model/list_alarms.dart';
 
 void main() => runApp(Main());
 class Main extends StatelessWidget {
@@ -19,9 +22,19 @@ class Main extends StatelessWidget {
 
         //handle connection success
         if (snapshot.connectionState == ConnectionState.done) {
+          NotificationService().init();
+
           return MaterialApp(
             title: title,
             debugShowCheckedModeBanner: false,
+            themeMode: ThemeMode.system,
+
+            //route settings
+            home: AlarmsList(title: title),
+            onGenerateRoute: (settings) => RouteGenerator.generateRoute(settings),
+            navigatorKey: RouteGenerator.navigatorKey,
+
+            //theme settings
             theme: ThemeData(
               brightness: Brightness.light,
               primarySwatch: Colors.lightBlue,
@@ -32,8 +45,6 @@ class Main extends StatelessWidget {
               primarySwatch: Colors.orange,
               visualDensity: VisualDensity.adaptivePlatformDensity,
             ),
-            themeMode: ThemeMode.system,
-            home: AlarmsList(title: title, ongoing: true),
           );
         } else {
           return CircularProgressIndicator();
