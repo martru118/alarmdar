@@ -2,7 +2,7 @@ class DateTimeHelper {
   //determines the date for the next alarm
   DateTime whentoRing(List<bool> weekdays, int offset) {
     final DateTime today = new DateTime.now();
-    bool isTomorrow = weekdays.where((i) => !i).length == 7 && offset == 0;
+    bool isTomorrow = weekdays.where((i) => !i).length == 7;
 
     //check if calculation is offset by one day
     if (isTomorrow) {
