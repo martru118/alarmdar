@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 
 import 'model/list_alarms.dart';
 
-void main() => runApp(Main());
+void main() {
+  runApp(Main());
+}
+
 class Main extends StatelessWidget {
   final String title = "Your Alarms";
 

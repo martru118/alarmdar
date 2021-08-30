@@ -67,7 +67,7 @@ class NotificationService {
 
     //schedule notification at a specific date
     localNotifications.zonedSchedule(
-      alarmInfo.notifID,
+      alarmInfo.createdAt,
       alarmInfo.name,
       alarmInfo.description,
       when,

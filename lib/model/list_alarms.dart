@@ -1,3 +1,5 @@
+import 'package:alarmdar/model/alarm_preview.dart';
+import 'package:alarmdar/model/form_alarm.dart';
 import 'package:alarmdar/util/notifications_helper.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,6 +10,8 @@ import 'alarm_info.dart';
 import '../util/firebase_utils.dart';
 
 class AlarmsList extends StatefulWidget {
+  static const String route = '/';
+
   final String title;
   AlarmsList({Key key, @required this.title}): super(key: key);
 
@@ -117,7 +121,7 @@ class AlarmsPage extends State<AlarmsList> {
       onDismissed: (direction) {
         //delete current alarm
         selected = alarmInfo.reference.id;
-        notifID = alarmInfo.notifID;
+        notifID = alarmInfo.createdAt;
 
         if (selected != null) {
           print("Delete alarm $selected");
@@ -134,27 +138,25 @@ class AlarmsPage extends State<AlarmsList> {
     );
   }
 
-  void startForm(BuildContext context, String title, [AlarmInfo alarmInfo]) async {
-    final String route = "form";
-    print("AlarmsList/startForm::alarmInfo = ${alarmInfo.toJson()}");
+  void getPreview(BuildContext context, AlarmInfo alarmInfo) async {
+    print("AlarmsList/getPreview::alarmInfo = ${alarmInfo.toJson()}");
 
-    //push route to alarm form
-    await Navigator.of(context).pushNamed(route, arguments: ScreenArguments(
+    //push route to alarm preview
+    await Navigator.of(context).pushNamed(AlarmPreview.route, arguments: ScreenArguments(
       alarmInfo: alarmInfo,
-      title: title,
+      isRinging: false,
     ));
 
     selected = null;
   }
 
-  void getPreview(BuildContext context, AlarmInfo alarmInfo) async {
-    final String route = "preview";
-    print("AlarmsList/getPreview::alarmInfo = ${alarmInfo.toJson()}");
+  void startForm(BuildContext context, String title, [AlarmInfo alarmInfo]) async {
+    print("AlarmsList/startForm::alarmInfo = ${alarmInfo.toJson()}");
 
-    //push route to alarm preview
-    await Navigator.of(context).pushNamed(route, arguments: ScreenArguments(
+    //push route to alarm form
+    await Navigator.of(context).pushNamed(AlarmForm.route, arguments: ScreenArguments(
       alarmInfo: alarmInfo,
-      isRinging: false,
+      title: title,
     ));
 
     selected = null;

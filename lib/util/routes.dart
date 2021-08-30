@@ -2,6 +2,7 @@ import 'package:alarmdar/model/alarm_info.dart';
 import 'package:alarmdar/model/alarm_preview.dart';
 import 'package:alarmdar/model/form_alarm.dart';
 import 'package:alarmdar/model/list_alarms.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class RouteGenerator {
@@ -13,8 +14,8 @@ class RouteGenerator {
     //set named routes
     switch (settings.name) {
       //show the alarm preview
-      case "preview":
-        return MaterialPageRoute(builder: (context) {
+      case AlarmPreview.route:
+        return CupertinoPageRoute(builder: (context) {
           ScreenArguments arguments = args;
 
           return AlarmPreview(
@@ -24,7 +25,7 @@ class RouteGenerator {
         });
 
       //show the alarm form
-      case "form":
+      case AlarmForm.route:
         return MaterialPageRoute(builder: (context) {
           ScreenArguments arguments = args;
 
@@ -45,7 +46,10 @@ class RouteGenerator {
 
   //push an activity without context
   static void push(Widget activity) {
-    navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => activity));
+    navigatorKey.currentState?.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => activity),
+        (Route<dynamic> route) => false,
+    );
   }
 }
 

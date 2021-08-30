@@ -12,6 +12,7 @@ import '../util/firebase_utils.dart';
 
 
 class AlarmForm extends StatefulWidget {
+  static const String route = "/form";
   final AlarmInfo alarmInfo;
   final String title;
 
@@ -59,7 +60,7 @@ class FormPage extends State<AlarmForm> {
     } else {
       //autofill form
       refID = alarm.reference.id;
-      notifID = alarm.notifID;
+      notifID = alarm.createdAt;
 
       startTime = DateFormat.jm().parse(alarm.startTime);
       startDate = DateFormat.MMMEd().parse(alarm.date);
@@ -250,7 +251,7 @@ class FormPage extends State<AlarmForm> {
     final notifications = NotificationService();
 
     AlarmInfo alarm = new AlarmInfo(
-      notifID: notifID,
+      createdAt: notifID,
       startTime: timeString,
       weekdays: daysList,
       date: dateString,

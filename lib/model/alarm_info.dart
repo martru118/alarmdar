@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class AlarmInfo {
   DocumentReference reference;
-  final int notifID;
+  final int createdAt;
 
   final String startTime;
   final List<dynamic> weekdays;
@@ -16,7 +16,7 @@ class AlarmInfo {
   bool shouldNotify;
 
   AlarmInfo({this.reference,
-    @required this.notifID,
+    @required this.createdAt,
     @required this.startTime,
     @required this.weekdays,
     @required this.date,
@@ -29,7 +29,7 @@ class AlarmInfo {
 
   //get an alarm from map
   AlarmInfo.fromMap(Map<String, dynamic> snapshot, {this.reference}):
-    this.notifID = snapshot['notifID'],
+    this.createdAt = snapshot['createdAt'],
     this.startTime = snapshot['start'],
     this.weekdays = snapshot['weekdays'],
     this.date = snapshot['date'],
@@ -42,7 +42,7 @@ class AlarmInfo {
   //set alarm as JSON
   Map<String, dynamic> toJson() {
     return {
-      'notifID': notifID,
+      'createdAt': createdAt,
       'start': startTime,
       'weekdays': weekdays,
       'date': date,

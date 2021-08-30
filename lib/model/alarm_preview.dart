@@ -1,3 +1,4 @@
+import 'package:alarmdar/model/form_alarm.dart';
 import 'package:alarmdar/util/date_utils.dart';
 import 'package:alarmdar/util/firebase_utils.dart';
 import 'package:alarmdar/util/notifications_helper.dart';
@@ -8,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'alarm_info.dart';
 
 class AlarmPreview extends StatefulWidget {
+  static const String route = "/preview";
   final AlarmInfo alarmInfo;
   final bool isRinging;
 
@@ -40,7 +42,7 @@ class PreviewsPage extends State<AlarmPreview> {
 
     //get alarm and notification id
     selected = alarm.reference.id;
-    notifID = alarm.notifID;
+    notifID = alarm.createdAt;
   }
 
   @override
@@ -260,21 +262,19 @@ class PreviewsPage extends State<AlarmPreview> {
 
   //get updated alarm from database
   void reload(BuildContext context) async {
-    String route = "preview";
     print("AlarmPreview/reload");
 
     AlarmInfo updated = await db.retrievebyID(selected);
-    Navigator.pushReplacementNamed(context, route, arguments: ScreenArguments(
+    Navigator.pushReplacementNamed(context, AlarmPreview.route, arguments: ScreenArguments(
       alarmInfo: updated,
       isRinging: ringing,
     ));
   }
 
   void startForm(BuildContext context, AlarmInfo alarmInfo) async {
-    String route = "form";
     print("AlarmPreview/startForm::alarmInfo = ${alarmInfo.toJson()}");
     
-    await Navigator.of(context).pushNamed(route, arguments: ScreenArguments(
+    await Navigator.of(context).pushNamed(AlarmForm.route, arguments: ScreenArguments(
       alarmInfo: alarmInfo,
       title: "Edit Alarm",
     ));
