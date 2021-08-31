@@ -32,17 +32,18 @@ class FormPage extends State<AlarmForm> {
   int createdAt, timestamp;
   int recurrenceOption;
   DateTime start;
-  var alarmName, description, location;
+  var minimum, alarmName, description, location;
 
   @override
   void initState() {
     super.initState();
     AlarmInfo alarm = widget.alarmInfo;
+    DateTime today = new DateTime.now();
 
     if (alarm == null) {
       //initialize for UI
-      createdAt = new DateTime.now().millisecondsSinceEpoch;
-      start = new DateTime.now();
+      createdAt = today.millisecondsSinceEpoch;
+      start = today;
       timestamp = helper.getTimeStamp(start);
       recurrenceOption = 0;
 
@@ -56,10 +57,13 @@ class FormPage extends State<AlarmForm> {
       timestamp = alarm.timestamp;
       recurrenceOption = alarm.option;
 
+      minimum = new DateTime(today.year, today.month, today.day);
       alarmName = TextEditingController(text: alarm.name);
       description = TextEditingController(text: alarm.description);
       location = TextEditingController(text: alarm.location);
     }
+
+    minimum = new DateTime(today.year, today.month, today.day);
   }
 
   @override
@@ -102,8 +106,8 @@ class FormPage extends State<AlarmForm> {
                       child: CupertinoDatePicker(
                         mode: CupertinoDatePickerMode.dateAndTime,
                         initialDateTime: start,
-                        minimumDate: new DateTime.now(),
-                        maximumDate: start.add(new Duration(days: 365)),
+                        minimumDate: minimum,
+                        maximumDate: start.add(new Duration(days: 366)),
                         use24hFormat: MediaQuery.of(context).alwaysUse24HourFormat,
                         onDateTimeChanged: (datetime) {
                           HapticFeedback.selectionClick();
@@ -136,7 +140,10 @@ class FormPage extends State<AlarmForm> {
                           return DropdownMenuItem(
                             value: index,
                             child: Text("${helper.recurrences[index].toLowerCase()}",
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: Theme.of(context).accentColor,
+                                fontWeight: FontWeight.bold
+                              ),
                             ),
                           );
                         }),
@@ -157,9 +164,8 @@ class FormPage extends State<AlarmForm> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     //alarm message
-                    ListTile(
-                      leading: Icon(Icons.music_note),
-                      title: Text("An alarm will play at the above times"),
+                    Row(mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text("An alarm will ring at the above times")],
                     ),
 
                     //name textfield
@@ -214,7 +220,7 @@ class FormPage extends State<AlarmForm> {
                           icon: const Icon(Icons.save),
                           onPressed: () {
                             int currentTime = DateTime.now().millisecondsSinceEpoch;
-                            print("Alarm is schduled for $timestamp, validated at $currentTime");
+                            print("Alarm is scheduled for $timestamp, validated at $currentTime");
 
                             //validate form
                             if (timestamp > currentTime) {
