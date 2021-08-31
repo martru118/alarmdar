@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 
 import '../util/firebase_utils.dart';
 
-
 class AlarmForm extends StatefulWidget {
   static const String route = "/form";
   final AlarmInfo alarmInfo;

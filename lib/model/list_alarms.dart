@@ -22,10 +22,10 @@ class AlarmsList extends StatefulWidget {
 
 class AlarmsPage extends State<AlarmsList> {
   final db = new AlarmModel();
-  static const double pad = 14;
+  final notifications = NotificationService();
 
-  String selected;
-  int notifID;
+  static const double pad = 14;
+  int selected;
 
   @override
   Widget build(BuildContext context) {
@@ -125,14 +125,13 @@ class AlarmsPage extends State<AlarmsList> {
       ),
       onDismissed: (direction) {
         //delete current alarm
-        selected = alarmInfo.reference.id;
-        notifID = alarmInfo.createdAt;
+        selected = alarmInfo.createdAt;
 
         if (selected != null) {
           print("Delete alarm $selected");
 
-          db.deleteData(selected);
-          NotificationService().cancel(notifID);
+          db.deleteData(selected.toString());
+          notifications.cancel(selected);
           selected = null;
         }
 

@@ -32,8 +32,7 @@ class PreviewsPage extends State<AlarmPreview> {
   //initialize ui
   AlarmInfo alarm;
   bool ringing;
-  String selected;
-  int notifID;
+  int selected;
 
   @override
   void initState() {
@@ -41,9 +40,8 @@ class PreviewsPage extends State<AlarmPreview> {
     alarm = widget.alarmInfo;
     ringing = widget.isRinging;
 
-    //get alarm and notification id
-    selected = alarm.reference.id;
-    notifID = alarm.createdAt;
+    //get alarm id
+    selected = alarm.createdAt;
   }
 
   @override
@@ -147,15 +145,15 @@ class PreviewsPage extends State<AlarmPreview> {
               if (next == null) {
                 //turn off alarm if it does not repeat
                 alarm.shouldNotify = false;
-                db.updateData(alarm, selected);
-                notifications.cancel(notifID);
+                db.updateData(alarm, selected.toString());
+                notifications.cancel(selected);
               } else {
                 int newStamp = helper.getTimeStamp(next);
 
                 //schedule next alarm
                 alarm.start = DateFormat.yMMMEd().add_jm().format(next);
                 alarm.timestamp = newStamp;
-                db.updateData(alarm, selected);
+                db.updateData(alarm, selected.toString());
                 notifications.schedule(alarm, newStamp);
               }
 
@@ -203,8 +201,8 @@ class PreviewsPage extends State<AlarmPreview> {
                   content: Text("Alarm has been deleted"),
                 ));
 
-                db.deleteData(selected);
-                notifications.cancel(notifID);
+                db.deleteData(selected.toString());
+                notifications.cancel(selected);
                 Navigator.pop(context);
               },
             ),
@@ -223,10 +221,10 @@ class PreviewsPage extends State<AlarmPreview> {
         onPressed: () {
           //turn off alarm
           alarm.shouldNotify = false;
-          db.updateData(alarm, selected);
+          db.updateData(alarm, selected.toString());
 
           //cancel notification
-          notifications.cancel(notifID);
+          notifications.cancel(selected);
           Navigator.pop(context);
         }
       );
@@ -242,7 +240,7 @@ class PreviewsPage extends State<AlarmPreview> {
           //alarm is in the future
           if (alarm.timestamp > currentTime) {
             alarm.shouldNotify = true;
-            db.updateData(alarm, selected);
+            db.updateData(alarm, selected.toString());
 
             //schedule alarm
             notifications.schedule(alarm, alarm.timestamp);
@@ -264,7 +262,7 @@ class PreviewsPage extends State<AlarmPreview> {
   void reload(BuildContext context) async {
     print("AlarmPreview/reload");
 
-    AlarmInfo updated = await db.retrievebyID(selected);
+    AlarmInfo updated = await db.retrievebyID(selected.toString());
     Navigator.pushReplacementNamed(context, AlarmPreview.route, arguments: ScreenArguments(
       alarmInfo: updated,
       isRinging: ringing,
