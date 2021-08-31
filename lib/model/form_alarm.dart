@@ -145,12 +145,6 @@ class FormPage extends State<AlarmForm> {
                       ),
                     ]
                   ),
-
-                  //alarm message
-                  ListTile(
-                    leading: Icon(Icons.music_note),
-                    title: Text("An alarm will play at the above times"),
-                  )
                 ],
               ),
             ),
@@ -163,6 +157,12 @@ class FormPage extends State<AlarmForm> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    //alarm message
+                    ListTile(
+                      leading: Icon(Icons.music_note),
+                      title: Text("An alarm will play at the above times"),
+                    ),
+
                     //name textfield
                     TextFormField(
                       controller: alarmName,
