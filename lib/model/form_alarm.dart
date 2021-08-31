@@ -57,7 +57,6 @@ class FormPage extends State<AlarmForm> {
       timestamp = alarm.timestamp;
       recurrenceOption = alarm.option;
 
-      minimum = new DateTime(today.year, today.month, today.day);
       alarmName = TextEditingController(text: alarm.name);
       description = TextEditingController(text: alarm.description);
       location = TextEditingController(text: alarm.location);
