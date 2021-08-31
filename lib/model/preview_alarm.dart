@@ -77,6 +77,11 @@ class PreviewsPage extends State<AlarmPreview> {
                       title: Text("${alarm.start}"),
                     ),
 
+                    //alarm recurrences
+                    ListTile(leading: const Icon(Icons.repeat),
+                      title: Text("${helper.recurrences[alarm.option]}"),
+                    ),
+
                     //location details
                     ListTile(leading: const Icon(Icons.location_pin),
                       title: Text(alarm.location.isEmpty?

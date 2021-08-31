@@ -1,5 +1,5 @@
 import 'package:alarmdar/model/alarm_info.dart';
-import 'package:alarmdar/model/alarm_preview.dart';
+import 'package:alarmdar/model/preview_alarm.dart';
 import 'package:alarmdar/util/firebase_utils.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';

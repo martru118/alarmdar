@@ -1,4 +1,4 @@
-import 'package:alarmdar/model/alarm_preview.dart';
+import 'package:alarmdar/model/preview_alarm.dart';
 import 'package:alarmdar/model/form_alarm.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
@@ -62,6 +62,11 @@ class AlarmsPage extends State<AlarmsList> {
   Widget buildAlarm(BuildContext context, DocumentSnapshot documentData) {
     final alarmInfo = AlarmInfo.fromMap(documentData.data(), reference: documentData.reference);
 
+    //initialize date and time strings
+    DateTime alarmDateTime = DateFormat.yMMMEd().add_jm().parse(alarmInfo.start);
+    String startTime = DateFormat.jm().format(alarmDateTime).replaceAll(' ', '\n');
+    String startDate = DateFormat.MMMEd().format(alarmDateTime);
+
     return Dismissible(
       key: UniqueKey(),
       background: Container(color: Colors.red),
@@ -70,7 +75,7 @@ class AlarmsPage extends State<AlarmsList> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
         child: InkWell(
           child: ListTile(
-            leading: Text("${startTime.toString()}"),
+            leading: Text("${startTime}"),
             title: Text("${alarmInfo.name}", textScaleFactor: 1.5,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -87,7 +92,7 @@ class AlarmsPage extends State<AlarmsList> {
                     ),
                     children: [
                       //alarm date
-                      TextSpan(text: "${startDate.toString()}\n\n",
+                      TextSpan(text: "${startDate}\n\n",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
 

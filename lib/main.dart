@@ -40,7 +40,7 @@ class Main extends StatelessWidget {
             //theme settings
             theme: ThemeData(
               brightness: Brightness.light,
-              primarySwatch: Colors.lightBlue,
+              primarySwatch: Colors.blue,
               visualDensity: VisualDensity.adaptivePlatformDensity,
             ),
             darkTheme: ThemeData(
