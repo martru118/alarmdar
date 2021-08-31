@@ -1,4 +1,4 @@
-import 'package:alarmdar/util/notifications_helper.dart';
+import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +10,7 @@ void main() {
 }
 
 class Main extends StatelessWidget {
-  final String title = "Your Alarms";
+  final String title = "Alarmdar";
 
   @override
   Widget build(BuildContext context) {

@@ -9,8 +9,8 @@ import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
   final String channelId = 'alarmsChannel';
-  final String channelName = 'Alarms';
-  final String channelDescription = 'An alarm that rings when you have a reminder';
+  final String channelName = 'Reminder Alarms';
+  final String channelDescription = 'Alarms that ring when you have a reminder';
 
   NotificationDetails channelInfo;
   var localNotifications;
@@ -43,11 +43,11 @@ class NotificationService {
   }
 
   Future onSelectNotification(var payload) async {
-    final db = new AlarmModel();
     print("Notification has been selected");
 
     //show preview when alarm rings
     if (payload != null) {
+      final db = new AlarmModel();
       AlarmInfo alarmInfo = await db.retrievebyID(payload);
       RouteGenerator.push(AlarmPreview(alarmInfo: alarmInfo, isRinging: true));
     }
@@ -55,8 +55,8 @@ class NotificationService {
 
   void schedule(AlarmInfo alarmInfo, int timestamp) {
     //determine when to send notification
-    DateTime start = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    tz.TZDateTime when = tz.TZDateTime(
+    DateTime start = new DateTime.fromMillisecondsSinceEpoch(timestamp);
+    tz.TZDateTime when = new tz.TZDateTime(
       tz.local,
       start.year,
       start.month,
@@ -72,13 +72,17 @@ class NotificationService {
       alarmInfo.description,
       when,
       channelInfo,
-      payload: alarmInfo.reference.id,
+      payload: alarmInfo.createdAt.toString(),
       androidAllowWhileIdle: true,
     );
   }
 
   void cancel(int id) async {
-    await localNotifications.cancel(id);
+    try {
+      await localNotifications.cancel(id);
+    } catch (e) {
+      e.toString();
+    }
   }
 
   Future<List<PendingNotificationRequest>> getPendingRequests() async {
@@ -86,6 +90,10 @@ class NotificationService {
   }
 
   void cancelPendingRequests() async {
-    await localNotifications.cancelAll();
+    try {
+      await localNotifications.cancelAll();
+    } catch (e) {
+      e.toString();
+    }
   }
 }

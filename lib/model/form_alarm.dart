@@ -1,8 +1,7 @@
 import 'package:alarmdar/util/date_utils.dart';
-import 'package:alarmdar/util/notifications_helper.dart';
+import 'package:alarmdar/util/notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:weekday_selector/weekday_selector.dart';
 
 import 'alarm_info.dart';
 import 'package:flutter/material.dart';
@@ -26,17 +25,14 @@ class AlarmForm extends StatefulWidget {
 }
 
 class FormPage extends State<AlarmForm> {
-  final helper = DateTimeHelper();
+  final helper = new DateTimeHelper();
   final formKey = new GlobalKey<FormState>();
   static const double pad = 12;
 
   //initialize ui
-  String refID;
-  int notifID;
-  DateTime startTime, startDate;
-  String timeString, dateString;
-  int timestamp;
-  List<bool> daysList;
+  int createdAt, timestamp;
+  int recurrenceOption;
+  DateTime start;
   var alarmName, description, location;
 
   @override
@@ -45,35 +41,26 @@ class FormPage extends State<AlarmForm> {
     AlarmInfo alarm = widget.alarmInfo;
 
     if (alarm == null) {
-      //initialize widgets in form
-      refID = "";
-      notifID = DateTime.now().millisecondsSinceEpoch;
-
-      startTime = new DateTime.now();
-      startDate = startTime;
-      daysList = List.filled(7, false, growable: false);
-      timestamp = helper.getTimeStamp(startDate, startTime);
+      //initialize for UI
+      createdAt = new DateTime.now().millisecondsSinceEpoch;
+      start = new DateTime.now();
+      timestamp = helper.getTimeStamp(start);
+      recurrenceOption = 0;
 
       alarmName = TextEditingController(text: "");
       description = TextEditingController(text: "");
       location = TextEditingController(text: "");
     } else {
       //autofill form
-      refID = alarm.reference.id;
-      notifID = alarm.createdAt;
-
-      startTime = DateFormat.jm().parse(alarm.startTime);
-      startDate = DateFormat.MMMEd().parse(alarm.date);
-      daysList = alarm.weekdays.map((i) => i as bool).toList(growable: false);
+      createdAt = alarm.createdAt;
+      start = DateFormat.yMMMEd().add_jm().parse(alarm.start);
       timestamp = alarm.timestamp;
+      recurrenceOption = alarm.option;
 
       alarmName = TextEditingController(text: alarm.name);
       description = TextEditingController(text: alarm.description);
       location = TextEditingController(text: alarm.location);
     }
-
-    timeString = TimeOfDay.fromDateTime(startTime).format(context);
-    dateString = DateFormat.MMMEd().format(startDate);
   }
 
   @override
@@ -89,157 +76,173 @@ class FormPage extends State<AlarmForm> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(title: Text(widget.title), leading: BackButton()),
-        body: Form(
-          key: formKey,
-          child: GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: ListView(
-              padding: EdgeInsets.symmetric(horizontal: pad/2),
-              children: [
+        body: buildForm(context),
+      ),
+    );
+  }
 
-                //time picker
-                Card(
-                  elevation: pad/2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-                  child: Container(
+  Widget buildForm(BuildContext context) {
+    return Form(key: formKey,
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: ListView(
+          padding: EdgeInsets.symmetric(horizontal: pad/2),
+          children: [
+
+            //date and time picker
+            Card(
+              elevation: pad/2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
                     height: MediaQuery.of(context).size.height/3,
                     child: CupertinoTheme(
                       data: CupertinoThemeData(brightness: Theme.of(context).brightness),
                       child: CupertinoDatePicker(
-                        mode: CupertinoDatePickerMode.time,
-                        initialDateTime: startTime,
+                        mode: CupertinoDatePickerMode.dateAndTime,
+                        initialDateTime: start,
+                        minimumDate: new DateTime.now(),
+                        maximumDate: start.add(new Duration(days: 365)),
                         use24hFormat: MediaQuery.of(context).alwaysUse24HourFormat,
-                        onDateTimeChanged: (date) {
+                        onDateTimeChanged: (datetime) {
                           HapticFeedback.selectionClick();
-                          startTime = date;
-                          timeString = TimeOfDay.fromDateTime(startTime).format(context);
+
+                          //set time
+                          start = datetime;
+                          timestamp = helper.getTimeStamp(start);
+                          print("AlarmFrom/CupertinoDatePicker::time = $datetime");
                         },
                       ),
                     ),
                   ),
-                ),
+                ]
+              ),
+            ),
 
-                //options for repeating alarms
-                WeekdaySelector(
-                  elevation: pad/2,
-                  selectedElevation: pad/3,
-                  textStyle: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).accentColor),
-                  selectedTextStyle: TextStyle(fontWeight: FontWeight.bold),
-                  values: daysList,
-                  onChanged: (day) {
-                    HapticFeedback.selectionClick();
-
-                    setState(() {
-                      //select weekdays for repeating alarms
-                      daysList[day % 7] = !daysList[day % 7];
-
-                      //get the date for the next alarm
-                      startDate = helper.whentoRing(daysList, 0);
-                      timestamp = helper.getTimeStamp(startDate, startTime);
-                      dateString = DateFormat.MMMEd().format(startDate);
-                    });
-                  },
-                ),
-
-                Card(
-                  elevation: pad/2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-                  child: Container(
-                    padding: EdgeInsets.all(pad),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-
-                        //show preview for next alarm
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text("Alarm will ring on "),
-                            Text("$dateString", style: TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-
-                        //name textfield
-                        TextFormField(
-                          controller: alarmName,
-                          textCapitalization: TextCapitalization.sentences,
-                          validator: (value) {
-                            if (value.isEmpty) {return "Enter a name for this alarm";}
-                            return null;
-                          },
-                          decoration: const InputDecoration(
-                            border: UnderlineInputBorder(),
-                            icon: const Icon(Icons.event),
-                            labelText: "Name",
-                          ),
-                        ),
-
-                        //description textfield
-                        TextFormField(
-                          controller: description,
-                          keyboardType: TextInputType.multiline,
-                          textCapitalization: TextCapitalization.sentences,
-                          maxLines: null,
-                          validator: (value) {
-                            if (value.isEmpty) {return "Enter a description for this alarm";}
-                            return null;
-                          },
-                          decoration: const InputDecoration(
-                            border: UnderlineInputBorder(),
-                            icon: const Icon(Icons.list),
-                            labelText: "Description",
-                          ),
-                        ),
-
-                        //location textfield
-                        TextField(
-                          controller: location,
-                          textCapitalization: TextCapitalization.sentences,
-                          decoration: const InputDecoration(
-                            border: UnderlineInputBorder(),
-                            icon: const Icon(Icons.location_on),
-                            labelText: "Location (optional)",
-                          ),
-                        ),
-
-                        //save button
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            ElevatedButton.icon(
-                              icon: const Icon(Icons.save),
-                              label: Text("Save"),
-                              onPressed: () {
-                                int currentTime = DateTime.now().millisecondsSinceEpoch;
-
-                                //validate form
-                                if (timestamp > currentTime) {
-                                  if (formKey.currentState.validate()) {
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                      content: Text("Alarm has been set"),
-                                    ));
-
-                                    setAlarm(alarmName.text, description.text, location.text);
-                                    Navigator.pop(context);
-                                  }
-
-                                //form is invalid due to time chosen
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text("Please choose a time in the future"),
-                                  ));
-                                }
-                              }
+            //recurrence options
+            Card(
+              elevation: pad/2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Remind me "),
+                      DropdownButton(
+                        value: recurrenceOption,
+                        items: List.generate(helper.recurrences.length, (index) {
+                          return DropdownMenuItem(
+                            value: index,
+                            child: Text("${helper.recurrences[index].toLowerCase()}",
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
-                          ]
-                        ),
+                          );
+                        }),
+                        onChanged: (value) => setState(() => recurrenceOption = value),
+                      ),
+                    ]
+                  ),
+
+                  //alarm message
+                  ListTile(
+                    leading: Icon(Icons.music_note),
+                    title: Text("An alarm will play at the above times"),
+                  )
+                ],
+              ),
+            ),
+
+            Card(
+              elevation: pad/2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+              child: Container(
+                padding: EdgeInsets.all(pad),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    //name textfield
+                    TextFormField(
+                      controller: alarmName,
+                      textCapitalization: TextCapitalization.sentences,
+                      validator: (value) {
+                        if (value.isEmpty) {return "Enter a name for this alarm";}
+                        return null;
+                      },
+                      decoration: const InputDecoration(
+                        border: UnderlineInputBorder(),
+                        icon: const Icon(Icons.event),
+                        labelText: "Name",
+                      ),
+                    ),
+
+                    //description textfield
+                    TextFormField(
+                      controller: description,
+                      keyboardType: TextInputType.multiline,
+                      textCapitalization: TextCapitalization.sentences,
+                      maxLines: null,
+                      validator: (value) {
+                        if (value.isEmpty) {return "Enter a description for this alarm";}
+                        return null;
+                      },
+                      decoration: const InputDecoration(
+                        border: UnderlineInputBorder(),
+                        icon: const Icon(Icons.list),
+                        labelText: "Description",
+                      ),
+                    ),
+
+                    //location textfield
+                    TextField(
+                      controller: location,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: const InputDecoration(
+                        border: UnderlineInputBorder(),
+                        icon: const Icon(Icons.location_on),
+                        labelText: "Location (optional)",
+                      ),
+                    ), SizedBox(height: pad),
+
+                    //save button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton.icon(
+                          label: Text("Save"),
+                          icon: const Icon(Icons.save),
+                          onPressed: () {
+                            int currentTime = DateTime.now().millisecondsSinceEpoch;
+                            print("Alarm is schduled for $timestamp, validated at $currentTime");
+
+                            //validate form
+                            if (timestamp > currentTime) {
+                              if (formKey.currentState.validate()) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text("Alarm has been set"),
+                                ));
+
+                                setAlarm(alarmName.text, description.text, location.text);
+                                Navigator.pop(context);
+                              }
+
+                              //form is invalid due to time chosen
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text("Please choose a time in the future"),
+                              ));
+                            }
+                          }
+                        )
                       ]
                     ),
-                  ),
+                  ]
                 ),
-              ]
+              ),
             ),
-          ),
+          ]
         ),
       ),
     );
@@ -251,11 +254,10 @@ class FormPage extends State<AlarmForm> {
     final notifications = NotificationService();
 
     AlarmInfo alarm = new AlarmInfo(
-      createdAt: notifID,
-      startTime: timeString,
-      weekdays: daysList,
-      date: dateString,
+      createdAt: createdAt,
+      start: DateFormat.yMMMEd().add_jm().format(start),
       timestamp: timestamp,
+      option: recurrenceOption,
       name: name,
       description: desc,
       location: loc,
@@ -263,15 +265,14 @@ class FormPage extends State<AlarmForm> {
     );
 
     //send alarm to database
-    if (refID.isEmpty) {
+    if (alarm.reference == null) {
       print("Store alarm in database");
 
       db.storeData(alarm);
       notifications.schedule(alarm, timestamp);
     } else {
       print("Update alarm in database");
-
-      db.updateData(alarm, refID);
+      db.updateData(alarm, alarm.createdAt.toString());
       notifications.schedule(alarm, timestamp);
     }
   }

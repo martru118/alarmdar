@@ -1,8 +1,9 @@
 import 'package:alarmdar/model/form_alarm.dart';
 import 'package:alarmdar/util/date_utils.dart';
 import 'package:alarmdar/util/firebase_utils.dart';
-import 'package:alarmdar/util/notifications_helper.dart';
+import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -25,7 +26,7 @@ class AlarmPreview extends StatefulWidget {
 class PreviewsPage extends State<AlarmPreview> {
   final db = new AlarmModel();
   final helper = new DateTimeHelper();
-  final notifications = new NotificationService();
+  final notifications = NotificationService();
   static const double pad = 14;
 
   //initialize ui
@@ -73,7 +74,7 @@ class PreviewsPage extends State<AlarmPreview> {
                   children: [
                     //alarm date and time
                     ListTile(leading: const Icon(Icons.access_time),
-                      title: Text("${alarm.date} at ${alarm.startTime}"),
+                      title: Text("${alarm.start}"),
                     ),
 
                     //location details
@@ -136,19 +137,18 @@ class PreviewsPage extends State<AlarmPreview> {
 
             //dismiss alarm
             case 1:
-              DateTime next = helper.whentoRing(alarm.weekdays, 1);
+              DateTime next = helper.nextAlarm(alarm.option);
 
               if (next == null) {
-                //turn off alarm if there are no more selected weekdays
+                //turn off alarm if it does not repeat
                 alarm.shouldNotify = false;
                 db.updateData(alarm, selected);
                 notifications.cancel(notifID);
               } else {
-                DateTime time = DateFormat.jm().parse(alarm.startTime);
-                int newStamp = helper.getTimeStamp(next, time);
+                int newStamp = helper.getTimeStamp(next);
 
                 //schedule next alarm
-                alarm.date = DateFormat.MMMEd().format(next);
+                alarm.start = DateFormat.yMMMEd().add_jm().format(next);
                 alarm.timestamp = newStamp;
                 db.updateData(alarm, selected);
                 notifications.schedule(alarm, newStamp);
@@ -213,12 +213,14 @@ class PreviewsPage extends State<AlarmPreview> {
     //archive if alarm can ring
     if (alarm.shouldNotify) {
       return FloatingActionButton.extended(
-        label: Text("Archive"),
-        icon: const Icon(Icons.archive),
+        label: Text("Turn OFF"),
+        icon: const Icon(CupertinoIcons.bell_slash_fill),
         onPressed: () {
           //turn off alarm
           alarm.shouldNotify = false;
           db.updateData(alarm, selected);
+
+          //cancel notification
           notifications.cancel(notifID);
           Navigator.pop(context);
         }
@@ -227,20 +229,13 @@ class PreviewsPage extends State<AlarmPreview> {
     //restore if alarm cannot ring
     } else {
       return FloatingActionButton.extended(
-        label: Text("Restore"),
-        icon: const Icon(Icons.restore),
+        label: Text("Turn ON"),
+        icon: const Icon(CupertinoIcons.bell_fill),
         onPressed: () {
           int currentTime = DateTime.now().millisecondsSinceEpoch;
 
           //alarm is in the future
           if (alarm.timestamp > currentTime) {
-            //get the date for the next alarm
-            DateTime next = helper.whentoRing(alarm.weekdays, 0);
-            DateTime time = DateFormat.jm().parse(alarm.startTime);
-
-            //update alarm info
-            alarm.date = DateFormat.MMMEd().format(next);
-            alarm.timestamp = helper.getTimeStamp(next, time);
             alarm.shouldNotify = true;
             db.updateData(alarm, selected);
 

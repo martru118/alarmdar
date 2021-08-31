@@ -26,7 +26,8 @@ class AlarmModel {
 
   //add alarm
   void storeData(AlarmInfo alarm) {
-    db.collection(collectionPath).add(alarm.toJson());
+    String path = alarm.createdAt.toString();
+    db.collection(collectionPath).doc(path).set(alarm.toJson());
   }
 
   //update alarm

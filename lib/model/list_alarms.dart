@@ -1,10 +1,11 @@
 import 'package:alarmdar/model/alarm_preview.dart';
 import 'package:alarmdar/model/form_alarm.dart';
-import 'package:alarmdar/util/notifications_helper.dart';
+import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 import 'alarm_info.dart';
 import '../util/firebase_utils.dart';
@@ -21,7 +22,6 @@ class AlarmsList extends StatefulWidget {
 
 class AlarmsPage extends State<AlarmsList> {
   final db = new AlarmModel();
-  final notifications = new NotificationService();
   static const double pad = 14;
 
   String selected;
@@ -70,9 +70,9 @@ class AlarmsPage extends State<AlarmsList> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
         child: InkWell(
           child: ListTile(
-            leading: Text("${alarmInfo.startTime.replaceFirst(RegExp(' '), '\n')}"),
+            leading: Text("${startTime.toString()}"),
             title: Text("${alarmInfo.name}", textScaleFactor: 1.5,
-              style: TextStyle(fontWeight: FontWeight.bold)
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -87,7 +87,7 @@ class AlarmsPage extends State<AlarmsList> {
                     ),
                     children: [
                       //alarm date
-                      TextSpan(text: "${alarmInfo.date}\n\n",
+                      TextSpan(text: "${startDate.toString()}\n\n",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
 
@@ -127,7 +127,7 @@ class AlarmsPage extends State<AlarmsList> {
           print("Delete alarm $selected");
 
           db.deleteData(selected);
-          notifications.cancel(notifID);
+          NotificationService().cancel(notifID);
           selected = null;
         }
 
@@ -151,7 +151,7 @@ class AlarmsPage extends State<AlarmsList> {
   }
 
   void startForm(BuildContext context, String title, [AlarmInfo alarmInfo]) async {
-    print("AlarmsList/startForm::alarmInfo = ${alarmInfo.toJson()}");
+    print("AlarmsList/startForm");
 
     //push route to alarm form
     await Navigator.of(context).pushNamed(AlarmForm.route, arguments: ScreenArguments(
