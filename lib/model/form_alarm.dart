@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:alarmdar/util/date_utils.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:flutter/cupertino.dart';
@@ -29,7 +31,7 @@ class FormPage extends State<AlarmForm> {
   static const double pad = 12;
 
   //initialize ui
-  int createdAt, timestamp;
+  int hash, timestamp;
   int recurrenceOption;
   DateTime start;
   var minimum, alarmName, description, location;
@@ -42,7 +44,7 @@ class FormPage extends State<AlarmForm> {
 
     if (alarm == null) {
       //initialize for UI
-      createdAt = today.millisecondsSinceEpoch;
+      hash = new Random().nextInt(pow(2, 31) - 1);
       start = today;
       timestamp = helper.getTimeStamp(start);
       recurrenceOption = 0;
@@ -52,7 +54,7 @@ class FormPage extends State<AlarmForm> {
       location = TextEditingController(text: "");
     } else {
       //autofill form
-      createdAt = alarm.createdAt;
+      hash = alarm.hashcode;
       start = DateFormat.yMMMEd().add_jm().parse(alarm.start);
       timestamp = alarm.timestamp;
       recurrenceOption = alarm.option;
@@ -258,7 +260,7 @@ class FormPage extends State<AlarmForm> {
     final notifications = NotificationService();
 
     AlarmInfo alarm = new AlarmInfo(
-      createdAt: createdAt,
+      hashcode: hash,
       start: DateFormat.yMMMEd().add_jm().format(start),
       timestamp: timestamp,
       option: recurrenceOption,
@@ -276,7 +278,7 @@ class FormPage extends State<AlarmForm> {
       notifications.schedule(alarm, timestamp);
     } else {
       print("Update alarm in database");
-      db.updateData(alarm, alarm.createdAt.toString());
+      db.updateData(alarm, alarm.hashcode.toString());
       notifications.schedule(alarm, timestamp);
     }
   }

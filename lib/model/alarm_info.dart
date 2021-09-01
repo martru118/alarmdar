@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 
 class AlarmInfo {
   DocumentReference reference;
-  final int createdAt;
+  final int hashcode;
   String start;
   int timestamp;
-  int option;
+  final int option;
   final String name;
   final String description;
   final String location;
   bool shouldNotify;
 
   AlarmInfo({this.reference,
-    @required this.createdAt,
+    @required this.hashcode,
     @required this.start,
     @required this.timestamp,
     @required this.option,
@@ -25,7 +25,7 @@ class AlarmInfo {
 
   //get an alarm from map
   AlarmInfo.fromMap(Map<String, dynamic> snapshot, {this.reference}):
-    this.createdAt = snapshot['createdAt'],
+    this.hashcode = snapshot['hash'],
     this.start = snapshot['start'],
     this.timestamp = snapshot['timestamp'],
     this.option = snapshot['recurrence'],
@@ -37,7 +37,7 @@ class AlarmInfo {
   //set alarm as JSON
   Map<String, dynamic> toJson() {
     return {
-      'createdAt': createdAt,
+      'hash': hashcode,
       'start': start,
       'timestamp': timestamp,
       'recurrence': option,

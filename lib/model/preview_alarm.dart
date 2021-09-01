@@ -6,6 +6,7 @@ import 'package:alarmdar/util/routes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:wakelock/wakelock.dart';
 
 import 'alarm_info.dart';
 
@@ -41,11 +42,13 @@ class PreviewsPage extends State<AlarmPreview> {
     ringing = widget.isRinging;
 
     //get alarm id
-    selected = alarm.createdAt;
+    selected = alarm.hashcode;
   }
 
   @override
   Widget build(BuildContext context) {
+    Wakelock.toggle(enable: ringing);
+
     return SafeArea(
       child: Scaffold(
         appBar: buildAppBar(context, ringing),
@@ -161,6 +164,7 @@ class PreviewsPage extends State<AlarmPreview> {
           }
 
           //close preview
+          ringing = false;
           Navigator.of(context).pop();
         }
       );

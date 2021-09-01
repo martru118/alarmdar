@@ -28,6 +28,12 @@ class AlarmsPage extends State<AlarmsList> {
   int selected;
 
   @override
+  void initState() {
+    super.initState();
+    notifications.init();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
@@ -75,7 +81,7 @@ class AlarmsPage extends State<AlarmsList> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
         child: InkWell(
           child: ListTile(
-            leading: Text("${startTime}"),
+            leading: Text("$startTime"),
             title: Text("${alarmInfo.name}", textScaleFactor: 1.5,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -92,7 +98,7 @@ class AlarmsPage extends State<AlarmsList> {
                     ),
                     children: [
                       //alarm date
-                      TextSpan(text: "${startDate}\n\n",
+                      TextSpan(text: "$startDate\n\n",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
 
@@ -125,7 +131,7 @@ class AlarmsPage extends State<AlarmsList> {
       ),
       onDismissed: (direction) {
         //delete current alarm
-        selected = alarmInfo.createdAt;
+        selected = alarmInfo.hashcode;
 
         if (selected != null) {
           print("Delete alarm $selected");
