@@ -15,13 +15,18 @@ class NotificationService {
   NotificationDetails channelInfo;
   var localNotifications;
 
+  //create singleton
+  static final NotificationService notifications  = NotificationService.internal();
+  factory NotificationService() => notifications;
+  NotificationService.internal();
+
   Future<void> init() async {
     localNotifications = FlutterLocalNotificationsPlugin();
     tz.initializeTimeZones();
 
     //plugin setup
     var initAndroid = AndroidInitializationSettings('app_icon');
-    var initSettings = InitializationSettings(android: initAndroid, iOS: null);
+    var initSettings = InitializationSettings(android: initAndroid);
     localNotifications.initialize(
       initSettings,
       onSelectNotification: onSelectNotification,
@@ -39,7 +44,7 @@ class NotificationService {
       sound: RawResourceAndroidNotificationSound("ringtone.webm"),
     );
 
-    channelInfo = NotificationDetails(android: androidChannel, iOS: null);
+    channelInfo = NotificationDetails(android: androidChannel);
   }
 
   Future onSelectNotification(var payload) async {
@@ -54,25 +59,16 @@ class NotificationService {
   }
 
   void schedule(AlarmInfo alarmInfo, int timestamp) {
-    //determine when to send notification
-    DateTime start = new DateTime.fromMillisecondsSinceEpoch(timestamp);
-    tz.TZDateTime when = new tz.TZDateTime(
-      tz.local,
-      start.year,
-      start.month,
-      start.day,
-      start.hour,
-      start.minute,
-    );
+    tz.TZDateTime when = tz.TZDateTime.fromMillisecondsSinceEpoch(tz.local, timestamp);
 
     //schedule notification at a specific date
     localNotifications.zonedSchedule(
-      alarmInfo.createdAt,
+      alarmInfo.hashcode,
       alarmInfo.name,
       alarmInfo.description,
       when,
       channelInfo,
-      payload: alarmInfo.createdAt.toString(),
+      payload: alarmInfo.hashcode.toString(),
       androidAllowWhileIdle: true,
     );
   }
