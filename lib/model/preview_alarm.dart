@@ -5,8 +5,8 @@ import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:wakelock/wakelock.dart';
 
 import 'alarm_info.dart';
 
@@ -47,8 +47,6 @@ class PreviewsPage extends State<AlarmPreview> {
 
   @override
   Widget build(BuildContext context) {
-    Wakelock.toggle(enable: ringing);
-
     return SafeArea(
       child: Scaffold(
         appBar: buildAppBar(context, ringing),
@@ -138,18 +136,19 @@ class PreviewsPage extends State<AlarmPreview> {
             case 0:
               //schedule new notification for 5 minutes later
               DateTime snooze = new DateTime.now().add(new Duration(minutes: 5));
+              notifications.cancel(selected);
               notifications.schedule(alarm, snooze.millisecondsSinceEpoch);
               break;
 
             //dismiss alarm
             case 1:
-              DateTime next = helper.nextAlarm(alarm.option);
+              DateTime current = DateFormat.yMMMEd().add_jm().parse(alarm.start);
+              DateTime next = helper.nextAlarm(current, alarm.option);
 
               if (next == null) {
                 //turn off alarm if it does not repeat
                 alarm.shouldNotify = false;
                 db.updateData(alarm, selected.toString());
-                notifications.cancel(selected);
               } else {
                 int newStamp = helper.getTimeStamp(next);
 
@@ -162,10 +161,6 @@ class PreviewsPage extends State<AlarmPreview> {
 
               break;
           }
-
-          //close preview
-          ringing = false;
-          Navigator.of(context).pop();
         }
       );
 
@@ -217,48 +212,52 @@ class PreviewsPage extends State<AlarmPreview> {
   }
 
   Widget buildFab(BuildContext context) {
-    //archive if alarm can ring
-    if (alarm.shouldNotify) {
-      return FloatingActionButton.extended(
-        label: Text("Turn OFF"),
-        icon: const Icon(CupertinoIcons.bell_slash_fill),
-        onPressed: () {
-          //turn off alarm
-          alarm.shouldNotify = false;
-          db.updateData(alarm, selected.toString());
+    if (!ringing) {
+      //archive if alarm can ring
+      if (alarm.shouldNotify) {
+        return FloatingActionButton.extended(
+            label: Text("Turn OFF"),
+            icon: const Icon(CupertinoIcons.bell_slash_fill),
+            onPressed: () {
+              //turn off alarm
+              alarm.shouldNotify = false;
+              db.updateData(alarm, selected.toString());
 
-          //cancel notification
-          notifications.cancel(selected);
-          Navigator.pop(context);
-        }
-      );
+              //cancel notification
+              notifications.cancel(selected);
+              Navigator.pop(context);
+            }
+        );
 
-    //restore if alarm cannot ring
+        //restore if alarm cannot ring
+      } else {
+        return FloatingActionButton.extended(
+            label: Text("Turn ON"),
+            icon: const Icon(CupertinoIcons.bell_fill),
+            onPressed: () {
+              int currentTime = DateTime.now().millisecondsSinceEpoch;
+
+              //alarm is in the future
+              if (alarm.timestamp > currentTime) {
+                alarm.shouldNotify = true;
+                db.updateData(alarm, selected.toString());
+
+                //schedule alarm
+                notifications.schedule(alarm, alarm.timestamp);
+                Navigator.pop(context);
+
+                //alarm is in the past
+              } else {
+                startForm(context, alarm);
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text("Please choose a time in the future"),
+                ));
+              }
+            }
+        );
+      }
     } else {
-      return FloatingActionButton.extended(
-        label: Text("Turn ON"),
-        icon: const Icon(CupertinoIcons.bell_fill),
-        onPressed: () {
-          int currentTime = DateTime.now().millisecondsSinceEpoch;
-
-          //alarm is in the future
-          if (alarm.timestamp > currentTime) {
-            alarm.shouldNotify = true;
-            db.updateData(alarm, selected.toString());
-
-            //schedule alarm
-            notifications.schedule(alarm, alarm.timestamp);
-            Navigator.pop(context);
-
-          //alarm is in the past
-          } else {
-            startForm(context, alarm);
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text("Please choose a time in the future"),
-            ));
-          }
-        }
-      );
+      return null;
     }
   }
 

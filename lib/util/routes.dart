@@ -47,8 +47,8 @@ class RouteGenerator {
   //push an activity without context
   static void push(Widget activity) {
     navigatorKey.currentState?.pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => activity),
-        (Route<dynamic> route) => false,
+      MaterialPageRoute(builder: (_) => activity),
+      (Route<dynamic> route) => false,
     );
   }
 }

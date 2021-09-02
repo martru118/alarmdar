@@ -11,7 +11,7 @@ import 'alarm_info.dart';
 import '../util/firebase_utils.dart';
 
 class AlarmsList extends StatefulWidget {
-  static const String route = '/';
+  static const String route = "Alarmdar";
 
   final String title;
   AlarmsList({Key key, @required this.title}): super(key: key);

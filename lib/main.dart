@@ -33,7 +33,8 @@ class Alarmdar extends StatelessWidget {
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
-        primarySwatch: Colors.orange,
+        primarySwatch: Colors.deepOrange,
+        accentColor: Colors.deepOrangeAccent,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
     );

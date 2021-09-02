@@ -2,13 +2,14 @@ import 'package:alarmdar/model/alarm_info.dart';
 import 'package:alarmdar/model/preview_alarm.dart';
 import 'package:alarmdar/util/firebase_utils.dart';
 import 'package:alarmdar/util/routes.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
-  final String channelId = 'alarmsChannel';
+  final String channelID = 'alarmsChannel';
   final String channelName = 'Reminder Alarms';
   final String channelDescription = 'Alarms that ring when you have a reminder';
 
@@ -32,16 +33,21 @@ class NotificationService {
       onSelectNotification: onSelectNotification,
     );
 
+    //setup a method channel
+    final MethodChannel platform = MethodChannel("MethodChannel");
+    final String alarmUri = await platform.invokeMethod("getAlarmUri");
+
     //setup a notification channel
     var androidChannel = AndroidNotificationDetails(
-      channelId,
+      channelID,
       channelName,
       channelDescription,
       importance: Importance.max,
       priority: Priority.max,
       fullScreenIntent: true,
       playSound: true,
-      sound: RawResourceAndroidNotificationSound("ringtone.webm"),
+      sound: UriAndroidNotificationSound(alarmUri),
+      enableVibration: true,
     );
 
     channelInfo = NotificationDetails(android: androidChannel);
