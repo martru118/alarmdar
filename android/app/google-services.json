@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "250511412079-eeida6gf0v6t8gpkviooknvn0evns1jq.apps.googleusercontent.com",
+          "client_id": "250511412079-il9pp6gb63ducfm7b9ju2n11qss6dhf2.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.martru.alarmdar",
-            "certificate_hash": "1207efda1111b1a2ae188182afb2b1c1c7783bfb"
+            "certificate_hash": "e17ffa9b21da781891bf67171660eb55b6da1c31"
           }
         },
         {

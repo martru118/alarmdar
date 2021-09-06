@@ -1,7 +1,9 @@
+import 'package:alarmdar/auth/splash.dart';
 import 'package:alarmdar/model/alarm_info.dart';
 import 'package:alarmdar/model/preview_alarm.dart';
 import 'package:alarmdar/model/form_alarm.dart';
 import 'package:alarmdar/model/list_alarms.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -35,32 +37,43 @@ class RouteGenerator {
           );
         });
 
+      //show the splash screen
+      case SplashScreen.route:
+        return MaterialPageRoute(builder: (context) {
+          ScreenArguments arguments = args;
+          return SplashScreen();
+        });
+
       //show a list of alarms
       default:
         return MaterialPageRoute(builder: (context) {
           ScreenArguments arguments = args;
-          return AlarmsList(title: arguments.title);
+          return AlarmsList(user: arguments.user);
         });
     }
   }
 
   //push an activity without context
   static void push(Widget activity) {
-    navigatorKey.currentState?.pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => activity),
-      (Route<dynamic> route) => false,
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      navigatorKey.currentState.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => activity),
+        (Route<dynamic> route) => false,
+      );
+    });
   }
 }
 
 class ScreenArguments {
-  final AlarmInfo alarmInfo;
   final String title;
+  final User user;
+  final AlarmInfo alarmInfo;
   final bool isRinging;
 
   ScreenArguments({
-    this.alarmInfo,
     this.title,
+    this.user,
+    this.alarmInfo,
     this.isRinging,
   });
 }

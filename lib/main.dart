@@ -1,8 +1,7 @@
+import 'package:alarmdar/auth/splash.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
-import 'model/list_alarms.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +20,7 @@ class Alarmdar extends StatelessWidget {
       themeMode: ThemeMode.system,
 
       //route settings
-      home: AlarmsList(title: title),
+      home: SplashScreen(),
       onGenerateRoute: (settings) => RouteGenerator.generateRoute(settings),
       navigatorKey: RouteGenerator.navigatorKey,
 
@@ -33,8 +32,8 @@ class Alarmdar extends StatelessWidget {
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
-        primarySwatch: Colors.deepOrange,
-        accentColor: Colors.deepOrangeAccent,
+        primarySwatch: Colors.blue,
+        accentColor: Colors.blueAccent,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
     );

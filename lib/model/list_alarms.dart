@@ -3,6 +3,7 @@ import 'package:alarmdar/model/form_alarm.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -11,10 +12,10 @@ import 'alarm_info.dart';
 import '../util/firebase_utils.dart';
 
 class AlarmsList extends StatefulWidget {
-  static const String route = "Alarmdar";
+  static const String route = "/list";
 
-  final String title;
-  AlarmsList({Key key, @required this.title}): super(key: key);
+  final User user;
+  AlarmsList({Key key, @required this.user}): super(key: key);
 
   @override
   AlarmsPage createState() => AlarmsPage();
@@ -23,8 +24,8 @@ class AlarmsList extends StatefulWidget {
 class AlarmsPage extends State<AlarmsList> {
   final db = new AlarmModel();
   final notifications = NotificationService();
-
   static const double pad = 14;
+
   int selected;
 
   @override
@@ -37,7 +38,7 @@ class AlarmsPage extends State<AlarmsList> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
+        appBar: AppBar(title: Text("Your Alarms")),
         body: buildList(),
         floatingActionButton: FloatingActionButton(
           tooltip: "New Alarm",

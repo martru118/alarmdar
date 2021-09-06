@@ -14,13 +14,19 @@ dependencies:
 
   # ui dependencies
   cupertino_icons: ^1.0.3
+  weekday_selector: ^1.0.0
+  sign_button: ^2.0.1
 
   # firebase dependencies
   firebase_core: ^1.5.0
   cloud_firestore: ^2.5.0
+  firebase_auth: ^1.2.0
 
   #notifications dependencies
   flutter_local_notifications: ^8.1.1+1
+
+  #google dependencies
+  google_sign_in: ^5.0.3
 
   # misc
   intl: ^0.17.0
@@ -31,3 +37,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/app_icon.png
