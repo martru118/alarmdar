@@ -6,9 +6,7 @@ class Authenticator {
   final GoogleSignIn signIn = GoogleSignIn();
 
   //get current user
-  Future<User> getUser() async {
-    return auth.currentUser;
-  }
+  User getUser() => auth.currentUser;
 
   //sign in to Google account
   Future<User> login() async {

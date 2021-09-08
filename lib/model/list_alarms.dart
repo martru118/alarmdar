@@ -168,6 +168,10 @@ class AlarmsPage extends State<AlarmsList> {
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColor,
+              image: DecorationImage(
+                fit: BoxFit.fill,
+                image: NetworkImage("https://raw.githubusercontent.com/martru118/alarmdar/master/assets/background.jpg"),
+              ),
             ),
           ),
 
@@ -182,10 +186,8 @@ class AlarmsPage extends State<AlarmsList> {
             onTap: () async {
               //sign out of app
               await auth.logout();
-              notifications.cancelPendingRequests();
 
-              Navigator.pushNamedAndRemoveUntil(
-                context,
+              Navigator.of(context).pushNamedAndRemoveUntil(
                 SplashScreen.route,
                 (route) => false,
               );
