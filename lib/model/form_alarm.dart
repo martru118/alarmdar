@@ -1,7 +1,9 @@
 import 'dart:math';
 
+import 'package:alarmdar/auth/authenticator.dart';
 import 'package:alarmdar/util/date_utils.dart';
 import 'package:alarmdar/util/notifications.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
@@ -27,6 +29,7 @@ class AlarmForm extends StatefulWidget {
 
 class FormPage extends State<AlarmForm> {
   final helper = new DateTimeHelper();
+  final auth = new Authenticator();
   final formKey = new GlobalKey<FormState>();
   static const double pad = 12;
 
@@ -255,9 +258,10 @@ class FormPage extends State<AlarmForm> {
   }
 
   //save alarm details to database
-  void setAlarm(String name, String desc, String loc) {
+  void setAlarm(String name, String desc, String loc) async {
     final db = new AlarmModel();
     final notifications = NotificationService();
+    User account = await auth.getUser();
 
     AlarmInfo alarm = new AlarmInfo(
       hashcode: hash,
@@ -267,6 +271,7 @@ class FormPage extends State<AlarmForm> {
       name: name,
       description: desc,
       location: loc,
+      accountName: account.email,
       shouldNotify: true,
     );
 

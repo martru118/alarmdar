@@ -1,3 +1,5 @@
+import 'package:alarmdar/auth/authenticator.dart';
+import 'package:alarmdar/auth/splash.dart';
 import 'package:alarmdar/model/preview_alarm.dart';
 import 'package:alarmdar/model/form_alarm.dart';
 import 'package:alarmdar/util/notifications.dart';
@@ -23,6 +25,7 @@ class AlarmsList extends StatefulWidget {
 
 class AlarmsPage extends State<AlarmsList> {
   final db = new AlarmModel();
+  final auth = new Authenticator();
   final notifications = NotificationService();
   static const double pad = 14;
 
@@ -39,6 +42,7 @@ class AlarmsPage extends State<AlarmsList> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(title: Text("Your Alarms")),
+        drawer: buildDrawer(context),
         body: buildList(),
         floatingActionButton: FloatingActionButton(
           tooltip: "New Alarm",
@@ -54,7 +58,7 @@ class AlarmsPage extends State<AlarmsList> {
       stream: db.retrieveAll(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
-          return CircularProgressIndicator();
+          return Center(child: CircularProgressIndicator());
         } else {
           return ListView(
             padding: EdgeInsets.symmetric(horizontal: pad/2),
@@ -80,48 +84,46 @@ class AlarmsPage extends State<AlarmsList> {
       child: Card(
         elevation: pad/2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-        child: InkWell(
-          child: ListTile(
-            leading: Text("$startTime"),
-            title: Text("${alarmInfo.name}", textScaleFactor: 1.5,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Expanded(child: RichText(
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  text: TextSpan(text: "\u23F0\t",
-                    style: TextStyle(
-                      color: MediaQuery.of(context).platformBrightness == Brightness.light?
-                          Colors.grey[700] : Colors.white,
-                    ),
-                    children: [
-                      //alarm date
-                      TextSpan(text: "$startDate\n\n",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-
-                      //description
-                      TextSpan(text: "${alarmInfo.description}",
-                        style: TextStyle(fontStyle: FontStyle.italic),
-                      ),
-                    ]
+        child: ListTile(
+          leading: Text("$startTime"),
+          title: Text("${alarmInfo.name}", textScaleFactor: 1.5,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Expanded(child: RichText(
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                text: TextSpan(text: "\u23F0\t",
+                  style: TextStyle(
+                    color: MediaQuery.of(context).platformBrightness == Brightness.light?
+                        Colors.grey[700] : Colors.white,
                   ),
-                )),
-              ],
-            ),
+                  children: [
+                    //alarm date
+                    TextSpan(text: "$startDate\n\n",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
 
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Switch(value: alarmInfo.shouldNotify, onChanged: null),
-              ],
-            ),
+                    //description
+                    TextSpan(text: "${alarmInfo.description}",
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ]
+                ),
+              )),
+            ],
+          ),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Switch(value: alarmInfo.shouldNotify, onChanged: null),
+            ],
           ),
 
+          //item gestures
           onTap: () => getPreview(context, alarmInfo),
           onLongPress: () {
             //shortcut for editing selected alarms
@@ -146,6 +148,49 @@ class AlarmsPage extends State<AlarmsList> {
           content: Text("Alarm has been deleted"),
         ));
       },
+    );
+  }
+
+  Widget buildDrawer(BuildContext context) {
+    User currentUser = widget.user;
+
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          //user account header
+          UserAccountsDrawerHeader(
+            accountName: Text("${currentUser.displayName}"),
+            accountEmail: Text("${currentUser.email}"),
+            currentAccountPicture: CircleAvatar(
+              backgroundImage: NetworkImage(currentUser.photoURL),
+              radius: 45,
+            ),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
+
+          //account options
+          ListTile(
+            leading: const Icon(Icons.event),
+            title: Text("Open in Google Calendar"),
+          ),
+          ListTile(
+            leading: const Icon(Icons.exit_to_app_outlined),
+            title: Text("Sign Out"),
+            onTap: () async {
+              //sign out of app
+              await auth.logout();
+              Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  SplashScreen.route,
+                  (route) => false,
+              );
+            },
+          ),
+        ]
+      ),
     );
   }
 

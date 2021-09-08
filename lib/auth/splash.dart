@@ -5,6 +5,7 @@ import 'package:alarmdar/model/list_alarms.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:sign_button/sign_button.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -35,7 +36,6 @@ class SplashState extends State<SplashScreen> {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-
                     //logo
                     Card(
                       shape: CircleBorder(),
@@ -82,7 +82,7 @@ class SplashState extends State<SplashScreen> {
                   if (snapshot.hasData) {
                     final data = snapshot.data as User;
                     Timer(new Duration(seconds: 3), () {
-                      //login in with current user data
+                      //login with current user data
                       onLogin(context, AlarmsList.route, data);
                     });
                   } else {
@@ -110,7 +110,7 @@ class SplashState extends State<SplashScreen> {
                   );
                 }
               )
-            ],
+            ]
           ),
         ),
       ),
@@ -119,13 +119,12 @@ class SplashState extends State<SplashScreen> {
 
   //go to activity after logging in
   void onLogin(BuildContext context, String routeName, User user) {
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      routeName,
-      (route) => false,
-      arguments: ScreenArguments(
-        user: user,
-      )
-    );
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        routeName,
+        (route) => false,
+        arguments: ScreenArguments(user: user)
+      );
+    });
   }
 }

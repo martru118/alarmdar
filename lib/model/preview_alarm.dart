@@ -5,7 +5,6 @@ import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import 'alarm_info.dart';
@@ -90,7 +89,7 @@ class PreviewsPage extends State<AlarmPreview> {
 
                     //account details
                     ListTile(leading: const Icon(Icons.person_rounded),
-                      title: Text("Account details"),
+                      title: Text("${alarm.accountName}"),
                     ),
                   ]
                 ),
