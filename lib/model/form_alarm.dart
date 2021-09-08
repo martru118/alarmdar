@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:alarmdar/auth/authenticator.dart';
 import 'package:alarmdar/util/date_utils.dart';
 import 'package:alarmdar/util/notifications.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
@@ -17,10 +16,12 @@ class AlarmForm extends StatefulWidget {
   static const String route = "/form";
   final AlarmInfo alarmInfo;
   final String title;
+  final String account;
 
   AlarmForm({Key key,
     @required this.alarmInfo,
     @required this.title,
+    @required this.account,
   }): super(key: key);
 
   @override
@@ -38,6 +39,7 @@ class FormPage extends State<AlarmForm> {
   int recurrenceOption;
   DateTime start;
   var minimum, alarmName, description, location;
+  String account;
 
   @override
   void initState() {
@@ -67,7 +69,8 @@ class FormPage extends State<AlarmForm> {
       location = TextEditingController(text: alarm.location);
     }
 
-    minimum = new DateTime(today.year, today.month, today.day);
+    minimum = new DateTime(today.year, today.month, today.day, start.hour, start.minute);
+    account = widget.account;
   }
 
   @override
@@ -258,10 +261,9 @@ class FormPage extends State<AlarmForm> {
   }
 
   //save alarm details to database
-  void setAlarm(String name, String desc, String loc) async {
+  void setAlarm(String name, String desc, String loc) {
     final db = new AlarmModel();
     final notifications = NotificationService();
-    User account = await auth.getUser();
 
     AlarmInfo alarm = new AlarmInfo(
       hashcode: hash,
@@ -271,7 +273,7 @@ class FormPage extends State<AlarmForm> {
       name: name,
       description: desc,
       location: loc,
-      accountName: account.email,
+      accountName: account,
       shouldNotify: true,
     );
 
@@ -283,6 +285,7 @@ class FormPage extends State<AlarmForm> {
       notifications.schedule(alarm, timestamp);
     } else {
       print("Update alarm in database");
+
       db.updateData(alarm, alarm.hashcode.toString());
       notifications.schedule(alarm, timestamp);
     }

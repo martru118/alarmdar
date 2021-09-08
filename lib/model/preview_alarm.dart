@@ -5,6 +5,7 @@ import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import 'alarm_info.dart';
@@ -172,15 +173,17 @@ class PreviewsPage extends State<AlarmPreview> {
           data: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
           child: Row(children: [
             IconButton(
-              tooltip: 'Refresh',
-              icon: const Icon(Icons.refresh),
+              tooltip: 'Copy',
+              icon: const Icon(Icons.copy),
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text("Checking for updates..."),
+                //copy alarm info to clipboard
+                Clipboard.setData(ClipboardData(
+                  text: "${alarm.start}\n${alarm.name}\n\n${alarm.description}"
                 ));
 
-                //reload the page
-                reload(context);
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text("Copied to clipboard"),
+                ));
               },
             ), Spacer(),
 
@@ -277,6 +280,7 @@ class PreviewsPage extends State<AlarmPreview> {
     await Navigator.of(context).pushNamed(AlarmForm.route, arguments: ScreenArguments(
       alarmInfo: alarmInfo,
       title: "Edit Alarm",
+      accountName: alarmInfo.accountName,
     ));
 
     //update alarm information

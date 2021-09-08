@@ -34,13 +34,13 @@ class RouteGenerator {
           return AlarmForm(
             alarmInfo: arguments.alarmInfo,
             title: arguments.title,
+            account: arguments.accountName,
           );
         });
 
       //show the splash screen
       case SplashScreen.route:
         return MaterialPageRoute(builder: (context) {
-          ScreenArguments arguments = args;
           return SplashScreen();
         });
 
@@ -55,25 +55,25 @@ class RouteGenerator {
 
   //push an activity without context
   static void push(Widget activity) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      navigatorKey.currentState.pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => activity),
-        (Route<dynamic> route) => false,
-      );
-    });
+    navigatorKey.currentState.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => activity),
+      (Route<dynamic> route) => false,
+    );
   }
 }
 
 class ScreenArguments {
-  final String title;
-  final User user;
   final AlarmInfo alarmInfo;
+  final User user;
+  final String title;
+  final String accountName;
   final bool isRinging;
 
   ScreenArguments({
-    this.title,
-    this.user,
     this.alarmInfo,
+    this.user,
+    this.title,
+    this.accountName,
     this.isRinging,
   });
 }

@@ -30,11 +30,13 @@ class AlarmsPage extends State<AlarmsList> {
   static const double pad = 14;
 
   int selected;
+  User currentUser;
 
   @override
   void initState() {
     super.initState();
     notifications.init();
+    currentUser = widget.user;
   }
 
   @override
@@ -55,7 +57,7 @@ class AlarmsPage extends State<AlarmsList> {
 
   Widget buildList() {
     return StreamBuilder<QuerySnapshot>(
-      stream: db.retrieveAll(),
+      stream: db.retrieveAll(currentUser.email),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
@@ -152,8 +154,6 @@ class AlarmsPage extends State<AlarmsList> {
   }
 
   Widget buildDrawer(BuildContext context) {
-    User currentUser = widget.user;
-
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -182,10 +182,12 @@ class AlarmsPage extends State<AlarmsList> {
             onTap: () async {
               //sign out of app
               await auth.logout();
+              notifications.cancelPendingRequests();
+
               Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  SplashScreen.route,
-                  (route) => false,
+                context,
+                SplashScreen.route,
+                (route) => false,
               );
             },
           ),
@@ -213,6 +215,7 @@ class AlarmsPage extends State<AlarmsList> {
     await Navigator.of(context).pushNamed(AlarmForm.route, arguments: ScreenArguments(
       alarmInfo: alarmInfo,
       title: title,
+      accountName: currentUser.email
     ));
 
     selected = null;
