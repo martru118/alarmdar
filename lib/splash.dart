@@ -66,7 +66,6 @@ class _SplashState extends State<SplashScreen> {
                       Text('Alarms with Reminders',
                         style: TextStyle(
                           color: Colors.white,
-                          fontStyle: FontStyle.italic,
                           fontSize: 24,
                         ),
                       ),

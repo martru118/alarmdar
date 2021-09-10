@@ -62,13 +62,11 @@ class RouteGenerator {
 class ScreenArguments {
   final AlarmInfo alarmInfo;
   final String title;
-  final String accountName;
   final bool isRinging;
 
   ScreenArguments({
     this.alarmInfo,
     this.title,
-    this.accountName,
     this.isRinging,
   });
 }
