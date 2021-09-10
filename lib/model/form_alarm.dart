@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:alarmdar/auth/authenticator.dart';
 import 'package:alarmdar/util/date_utils.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:flutter/cupertino.dart';
@@ -16,21 +15,18 @@ class AlarmForm extends StatefulWidget {
   static const String route = "/form";
   final AlarmInfo alarmInfo;
   final String title;
-  final String account;
 
   AlarmForm({Key key,
     @required this.alarmInfo,
     @required this.title,
-    @required this.account,
   }): super(key: key);
 
   @override
-  FormPage createState() => FormPage();
+  _AlarmFormState createState() => _AlarmFormState();
 }
 
-class FormPage extends State<AlarmForm> {
+class _AlarmFormState extends State<AlarmForm> {
   final helper = new DateTimeHelper();
-  final auth = new Authenticator();
   final formKey = new GlobalKey<FormState>();
   static const double pad = 12;
 
@@ -39,7 +35,6 @@ class FormPage extends State<AlarmForm> {
   int recurrenceOption;
   DateTime start;
   var minimum, alarmName, description, location;
-  String account;
 
   @override
   void initState() {
@@ -70,7 +65,6 @@ class FormPage extends State<AlarmForm> {
     }
 
     minimum = new DateTime(today.year, today.month, today.day, start.hour, start.minute);
-    account = widget.account;
   }
 
   @override
@@ -273,7 +267,6 @@ class FormPage extends State<AlarmForm> {
       name: name,
       description: desc,
       location: loc,
-      accountName: account,
       shouldNotify: true,
     );
 

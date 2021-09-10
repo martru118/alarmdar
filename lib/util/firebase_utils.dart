@@ -7,9 +7,8 @@ class AlarmModel {
   final String collectionPath = "alarms";
 
   //get alarms from Cloud Firestore
-  Stream<QuerySnapshot> retrieveAll(String accountName) {
+  Stream<QuerySnapshot> retrieveAll() {
     return db.collection(collectionPath)
-        .where("account", isEqualTo: accountName)
         .orderBy("notify", descending: true)
         .orderBy("timestamp")
         .snapshots();

@@ -1,4 +1,4 @@
-import 'package:alarmdar/auth/splash.dart';
+import 'package:alarmdar/splash.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -32,8 +32,7 @@ class Alarmdar extends StatelessWidget {
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
-        primarySwatch: Colors.blue,
-        accentColor: Colors.blueAccent,
+        primarySwatch: Colors.teal,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
     );

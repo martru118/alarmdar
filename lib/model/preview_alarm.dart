@@ -21,10 +21,10 @@ class AlarmPreview extends StatefulWidget {
   }): super(key: key);
 
   @override
-  State<StatefulWidget> createState() => PreviewsPage();
+  State<StatefulWidget> createState() => _PreviewState();
 }
 
-class PreviewsPage extends State<AlarmPreview> {
+class _PreviewState extends State<AlarmPreview> {
   final db = new AlarmModel();
   final helper = new DateTimeHelper();
   final notifications = NotificationService();
@@ -86,11 +86,6 @@ class PreviewsPage extends State<AlarmPreview> {
                       title: Text(alarm.location.isEmpty?
                           "Location not specified" : "${alarm.location}"
                       ),
-                    ),
-
-                    //account details
-                    ListTile(leading: const Icon(Icons.person_rounded),
-                      title: Text("${alarm.accountName}"),
                     ),
                   ]
                 ),
@@ -280,7 +275,6 @@ class PreviewsPage extends State<AlarmPreview> {
     await Navigator.of(context).pushNamed(AlarmForm.route, arguments: ScreenArguments(
       alarmInfo: alarmInfo,
       title: "Edit Alarm",
-      accountName: alarmInfo.accountName,
     ));
 
     //update alarm information

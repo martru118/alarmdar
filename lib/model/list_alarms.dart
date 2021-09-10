@@ -1,11 +1,8 @@
-import 'package:alarmdar/auth/authenticator.dart';
-import 'package:alarmdar/auth/splash.dart';
 import 'package:alarmdar/model/preview_alarm.dart';
 import 'package:alarmdar/model/form_alarm.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -15,28 +12,23 @@ import '../util/firebase_utils.dart';
 
 class AlarmsList extends StatefulWidget {
   static const String route = "/list";
-
-  final User user;
-  AlarmsList({Key key, @required this.user}): super(key: key);
+  AlarmsList({Key key}): super(key: key);
 
   @override
-  AlarmsPage createState() => AlarmsPage();
+  _ListState createState() => _ListState();
 }
 
-class AlarmsPage extends State<AlarmsList> {
+class _ListState extends State<AlarmsList> {
   final db = new AlarmModel();
-  final auth = new Authenticator();
   final notifications = NotificationService();
-  static const double pad = 14;
 
+  static const double pad = 14;
   int selected;
-  User currentUser;
 
   @override
   void initState() {
     super.initState();
     notifications.init();
-    currentUser = widget.user;
   }
 
   @override
@@ -44,7 +36,6 @@ class AlarmsPage extends State<AlarmsList> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(title: Text("Your Alarms")),
-        drawer: buildDrawer(context),
         body: buildList(),
         floatingActionButton: FloatingActionButton(
           tooltip: "New Alarm",
@@ -57,7 +48,7 @@ class AlarmsPage extends State<AlarmsList> {
 
   Widget buildList() {
     return StreamBuilder<QuerySnapshot>(
-      stream: db.retrieveAll(currentUser.email),
+      stream: db.retrieveAll(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
@@ -121,7 +112,12 @@ class AlarmsPage extends State<AlarmsList> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Switch(value: alarmInfo.shouldNotify, onChanged: null),
+              Switch(
+                inactiveThumbColor: Theme.of(context).accentColor,
+                inactiveTrackColor: Theme.of(context).accentColor,
+                value: alarmInfo.shouldNotify,
+                onChanged: null
+              ),
             ],
           ),
 
@@ -153,51 +149,6 @@ class AlarmsPage extends State<AlarmsList> {
     );
   }
 
-  Widget buildDrawer(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          //user account header
-          UserAccountsDrawerHeader(
-            accountName: Text("${currentUser.displayName}"),
-            accountEmail: Text("${currentUser.email}"),
-            currentAccountPicture: CircleAvatar(
-              backgroundImage: NetworkImage(currentUser.photoURL),
-              radius: 45,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
-              image: DecorationImage(
-                fit: BoxFit.fill,
-                image: NetworkImage("https://raw.githubusercontent.com/martru118/alarmdar/master/assets/background.jpg"),
-              ),
-            ),
-          ),
-
-          //account options
-          ListTile(
-            leading: const Icon(Icons.event),
-            title: Text("Open in Google Calendar"),
-          ),
-          ListTile(
-            leading: const Icon(Icons.exit_to_app_outlined),
-            title: Text("Sign Out"),
-            onTap: () async {
-              //sign out of app
-              await auth.logout();
-
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                SplashScreen.route,
-                (route) => false,
-              );
-            },
-          ),
-        ]
-      ),
-    );
-  }
-
   void getPreview(BuildContext context, AlarmInfo alarmInfo) async {
     print("AlarmsList/getPreview::alarmInfo = ${alarmInfo.toJson()}");
 
@@ -217,7 +168,6 @@ class AlarmsPage extends State<AlarmsList> {
     await Navigator.of(context).pushNamed(AlarmForm.route, arguments: ScreenArguments(
       alarmInfo: alarmInfo,
       title: title,
-      accountName: currentUser.email
     ));
 
     selected = null;

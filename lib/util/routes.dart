@@ -1,9 +1,8 @@
-import 'package:alarmdar/auth/splash.dart';
+import 'package:alarmdar/splash.dart';
 import 'package:alarmdar/model/alarm_info.dart';
 import 'package:alarmdar/model/preview_alarm.dart';
 import 'package:alarmdar/model/form_alarm.dart';
 import 'package:alarmdar/model/list_alarms.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -34,7 +33,6 @@ class RouteGenerator {
           return AlarmForm(
             alarmInfo: arguments.alarmInfo,
             title: arguments.title,
-            account: arguments.accountName,
           );
         });
 
@@ -47,8 +45,7 @@ class RouteGenerator {
       //show a list of alarms
       default:
         return MaterialPageRoute(builder: (context) {
-          ScreenArguments arguments = args;
-          return AlarmsList(user: arguments.user);
+          return AlarmsList();
         });
     }
   }
@@ -64,14 +61,12 @@ class RouteGenerator {
 
 class ScreenArguments {
   final AlarmInfo alarmInfo;
-  final User user;
   final String title;
   final String accountName;
   final bool isRinging;
 
   ScreenArguments({
     this.alarmInfo,
-    this.user,
     this.title,
     this.accountName,
     this.isRinging,

@@ -10,7 +10,6 @@ class AlarmInfo {
   final String name;
   final String description;
   final String location;
-  final String accountName;
   bool shouldNotify;
 
   AlarmInfo({this.reference,
@@ -21,7 +20,6 @@ class AlarmInfo {
     @required this.name,
     @required this.description,
     @required this.location,
-    @required this.accountName,
     @required this.shouldNotify,
   });
 
@@ -34,7 +32,6 @@ class AlarmInfo {
     this.name = snapshot['name'],
     this.description = snapshot['desc'],
     this.location = snapshot['location'],
-    this.accountName = snapshot['account'],
     this.shouldNotify = snapshot['notify'];
 
   //set alarm as JSON
@@ -47,7 +44,6 @@ class AlarmInfo {
       'name': name,
       'desc': description,
       'location': location,
-      'account': accountName,
       'notify': shouldNotify,
     };
   }
