@@ -24,19 +24,10 @@ class AlarmModel {
     return alarmInfo;
   }
 
-  //add alarm
+  //add alarm to database
   void storeData(AlarmInfo alarm) {
     String path = alarm.hashcode.toString();
-    db.collection(collectionPath).doc(path).set(alarm.toJson());
-  }
-
-  //update alarm
-  void updateData(AlarmInfo alarm, String path) {
-    try {
-      db.collection(collectionPath).doc(path).update(alarm.toJson());
-    } catch (e) {
-      e.toString();
-    }
+    db.collection(collectionPath).doc(path).set(alarm.toJson(), SetOptions(merge: true));
   }
 
   //delete alarm
