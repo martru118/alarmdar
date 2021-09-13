@@ -17,7 +17,7 @@ class _SplashState extends State<SplashScreen> {
     super.initState();
 
     //show splash screen for a few seconds
-    Future.delayed(const Duration(seconds: 4), () {
+    Future.delayed(const Duration(seconds: 3), () {
       print("Exit splash screen");
       RouteGenerator.push(AlarmsList());
     });
@@ -28,7 +28,7 @@ class _SplashState extends State<SplashScreen> {
     final Size size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Colors.lightBlue,
+      backgroundColor: Theme.of(context).colorScheme.primary,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 20.0),

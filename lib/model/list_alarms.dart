@@ -26,12 +26,6 @@ class _ListState extends State<AlarmsList> {
   int selected;
 
   @override
-  void initState() {
-    super.initState();
-    notifications.init();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
@@ -108,13 +102,15 @@ class _ListState extends State<AlarmsList> {
               )),
             ],
           ),
+
+          //alarm switch
           trailing: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Switch(
-                inactiveThumbColor: Theme.of(context).accentColor,
-                inactiveTrackColor: Theme.of(context).accentColor,
+                inactiveThumbColor: Theme.of(context).colorScheme.secondary,
+                inactiveTrackColor: Theme.of(context).colorScheme.secondary,
                 value: alarmInfo.shouldNotify,
                 onChanged: null
               ),
