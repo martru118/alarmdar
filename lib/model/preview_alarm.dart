@@ -271,7 +271,7 @@ class _PreviewState extends State<AlarmPreview> {
       title: "Edit Alarm",
     ));
 
-    //update alarm info
+    //update alarm details
     if (listener != null) {
       print("Listening for updates: $listener");
       setState(() => alarm = listener as AlarmInfo);
