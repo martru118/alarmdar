@@ -40,12 +40,12 @@ class _AlarmFormState extends State<AlarmForm> {
   void initState() {
     super.initState();
     AlarmInfo alarm = widget.alarmInfo;
-    DateTime today = new DateTime.now();
+    DateTime now = new DateTime.now();
 
     if (alarm == null) {
       //initialize form UI
       hash = new Random().nextInt(pow(2, 31) - 1);
-      start = today;
+      start = now;
       timestamp = helper.getTimeStamp(start);
       recurrenceOption = 0;
 
@@ -64,8 +64,9 @@ class _AlarmFormState extends State<AlarmForm> {
       location = TextEditingController(text: alarm.location);
     }
 
-    //minimum date and time for picker
-    minimum = new DateTime(today.year, today.month, today.day, 0, 0);
+    //initialize time picker
+    if (start.isBefore(now)) start = DateTime(now.year, now.month, now.day, start.hour, start.minute);
+    minimum = new DateTime(now.year, now.month, now.day, 0, 0);
   }
 
   @override
