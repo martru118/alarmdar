@@ -1,4 +1,5 @@
 import 'package:alarmdar/model/form_alarm.dart';
+import 'package:alarmdar/model/list_alarms.dart';
 import 'package:alarmdar/util/date_utils.dart';
 import 'package:alarmdar/util/firebase_utils.dart';
 import 'package:alarmdar/util/notifications.dart';
@@ -58,8 +59,10 @@ class _PreviewState extends State<AlarmPreview> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
                 child: ListTile(
                   leading: const Icon(Icons.event),
-                  title: SelectableText("${alarm.name}", style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: SelectableText("${alarm.description}"),
+                  title: SelectableText("${alarm.name}", textScaleFactor: 1.5,
+                      style: TextStyle(fontWeight: FontWeight.bold)
+                  ),
+                  subtitle: SelectableText("${alarm.description}", textScaleFactor: 1.5),
                 ),
               ),
 
@@ -71,17 +74,20 @@ class _PreviewState extends State<AlarmPreview> {
                   child: Column(
                     children: [
                       //alarm date and time
-                      ListTile(leading: const Icon(Icons.access_time),
+                      ListTile(
+                        leading: const Icon(Icons.access_time),
                         title: SelectableText("${alarm.start}"),
                       ),
 
                       //alarm recurrences
-                      ListTile(leading: const Icon(Icons.repeat),
+                      ListTile(
+                        leading: const Icon(Icons.repeat),
                         title: SelectableText("${helper.recurrences[alarm.option]}"),
                       ),
 
                       //location details
-                      ListTile(leading: const Icon(Icons.location_pin),
+                      ListTile(
+                        leading: const Icon(Icons.location_pin),
                         title: SelectableText(alarm.location.isEmpty?
                             "Location not specified" : "${alarm.location}"
                         ),
@@ -95,7 +101,7 @@ class _PreviewState extends State<AlarmPreview> {
         ),
 
         bottomNavigationBar: buildBottomBar(context, ringing),
-        floatingActionButton: buildFab(context),
+        floatingActionButton: buildFab(context, ringing),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       ),
     );
@@ -113,7 +119,7 @@ class _PreviewState extends State<AlarmPreview> {
     //show ringer actions when alarm rings
     if (isRinging) {
       return BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
+        type: BottomNavigationBarType.shifting,
         unselectedItemColor: Theme.of(context).colorScheme.secondary,
         items: [
           BottomNavigationBarItem(
@@ -131,7 +137,6 @@ class _PreviewState extends State<AlarmPreview> {
             case 0:
               //schedule new notification for 5 minutes later
               DateTime snooze = new DateTime.now().add(new Duration(minutes: 5));
-              notifications.cancel(selected);
               notifications.schedule(alarm, snooze.millisecondsSinceEpoch);
               break;
 
@@ -157,9 +162,9 @@ class _PreviewState extends State<AlarmPreview> {
               break;
           }
 
-          //close preview
-          ringing = false;
-          SystemNavigator.pop();
+          //go back to homepage
+          notifications.cancel(selected);
+          RouteGenerator.push(AlarmsList());
         }
       );
 
@@ -171,6 +176,8 @@ class _PreviewState extends State<AlarmPreview> {
         child: IconTheme(
           data: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
           child: Row(children: [
+
+            //copy button
             IconButton(
               tooltip: 'Copy',
               icon: const Icon(Icons.copy),
@@ -186,12 +193,14 @@ class _PreviewState extends State<AlarmPreview> {
               },
             ), Spacer(),
 
+            //edit button
             IconButton(
               tooltip: 'Edit',
               icon: const Icon(Icons.edit),
               onPressed: () => startForm(context, alarm),
             ),
 
+            //delete button
             IconButton(
               tooltip: 'Delete',
               icon: const Icon(Icons.delete),
@@ -212,15 +221,14 @@ class _PreviewState extends State<AlarmPreview> {
     }
   }
 
-  Widget buildFab(BuildContext context) {
-    if (!ringing) {
-      //archive if alarm can ring
+  Widget buildFab(BuildContext context, bool isRinging) {
+    if (!isRinging) {
+      //turn off alarm
       if (alarm.shouldNotify) {
         return FloatingActionButton.extended(
           label: Text("Turn OFF"),
           icon: const Icon(CupertinoIcons.bell_slash_fill),
           onPressed: () {
-            //turn off alarm
             alarm.shouldNotify = false;
             db.storeData(alarm);
 
@@ -230,7 +238,7 @@ class _PreviewState extends State<AlarmPreview> {
           }
         );
 
-        //restore if alarm cannot ring
+      //turn on alarm
       } else {
         return FloatingActionButton.extended(
           label: Text("Turn ON"),

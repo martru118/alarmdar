@@ -63,7 +63,7 @@ class _ListState extends State<AlarmsList> {
     //initialize date and time strings
     DateTime alarmDateTime = DateFormat.yMMMEd().add_jm().parse(alarmInfo.start);
     String startTime = DateFormat.jm().format(alarmDateTime).replaceAll(' ', '\n');
-    String startDate = DateFormat.yMMMEd().format(alarmDateTime);
+    String startDate = DateFormat.MMMEd().format(alarmDateTime);
 
     return Dismissible(
       key: UniqueKey(),

@@ -1,6 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:alarmdar/model/alarm_info.dart';
 import 'package:alarmdar/model/preview_alarm.dart';
-import 'package:alarmdar/util/firebase_utils.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -8,13 +9,15 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+import 'firebase_utils.dart';
+
 class NotificationService {
   final String channelID = 'alarmsChannel';
   final String channelName = 'Reminder Alarms';
   final String channelDescription = 'Alarms that ring when you have a reminder';
 
   NotificationDetails channelInfo;
-  var localNotifications;
+  var localNotifications, notificationDetails;
 
   //create singleton
   static final NotificationService notifications  = NotificationService.internal();
@@ -33,9 +36,10 @@ class NotificationService {
       onSelectNotification: onSelectNotification,
     );
 
-    //setup a method channel
+    //retrieve alarm uri from method channel
     final MethodChannel platform = MethodChannel("MethodChannel");
     final String alarmUri = await platform.invokeMethod("getAlarmUri");
+    const int flag = 4;
 
     //setup a notification channel
     var androidChannel = AndroidNotificationDetails(
@@ -46,19 +50,20 @@ class NotificationService {
       priority: Priority.max,
       fullScreenIntent: true,
       playSound: true,
-      sound: UriAndroidNotificationSound(alarmUri),
+      sound: RawResourceAndroidNotificationSound("remix"),
       enableVibration: true,
+      additionalFlags: Int32List.fromList([flag]),
     );
 
     channelInfo = NotificationDetails(android: androidChannel);
   }
 
   Future onSelectNotification(var payload) async {
-    print("Notification has been selected");
+    final db = new AlarmModel();
+    print("Send payload $payload");
 
     //show preview when alarm rings
     if (payload != null) {
-      final db = new AlarmModel();
       AlarmInfo alarmInfo = await db.retrievebyID(payload);
       RouteGenerator.push(AlarmPreview(alarmInfo: alarmInfo, isRinging: true));
     }
