@@ -67,7 +67,7 @@ class _AlarmFormState extends State<AlarmForm> {
     //initialize time picker
     if (start.isBefore(now)) start = new DateTime(now.year, now.month, now.day, start.hour, start.minute);
     minDate = new DateTime(now.year, now.month, now.day, 0, 0);
-    maxDate = new DateTime(now.year + 1, 12, 31, 23, 59);
+    maxDate = helper.isLeapYear(now.year + 1)? 366 : 365;
   }
 
   @override
@@ -112,7 +112,7 @@ class _AlarmFormState extends State<AlarmForm> {
                           mode: CupertinoDatePickerMode.dateAndTime,
                           initialDateTime: start,
                           minimumDate: minDate,
-                          maximumDate: maxDate,
+                          maximumDate: minDate.add(new Duration(days: maxDate + 1)),
                           use24hFormat: MediaQuery.of(context).alwaysUse24HourFormat,
                           onDateTimeChanged: (datetime) {
                             HapticFeedback.selectionClick();

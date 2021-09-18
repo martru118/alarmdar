@@ -63,7 +63,7 @@ class _ListState extends State<AlarmsList> {
     //initialize date and time strings
     DateTime alarmDateTime = DateFormat.yMMMEd().add_jm().parse(alarmInfo.start);
     String startTime = DateFormat.jm().format(alarmDateTime).replaceAll(' ', '\n');
-    String startDate = DateFormat.MMMEd().format(alarmDateTime);
+    String startDate = DateFormat.yMMMEd().format(alarmDateTime);
 
     return Dismissible(
       key: UniqueKey(),
@@ -82,6 +82,7 @@ class _ListState extends State<AlarmsList> {
               Expanded(child: RichText(
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
+                textScaleFactor: 1.25,
                 text: TextSpan(text: "\u23F0\t",
                   style: TextStyle(
                     color: MediaQuery.of(context).platformBrightness == Brightness.light?
@@ -109,8 +110,6 @@ class _ListState extends State<AlarmsList> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Switch(
-                inactiveThumbColor: Theme.of(context).colorScheme.secondary,
-                inactiveTrackColor: Theme.of(context).colorScheme.secondary,
                 value: alarmInfo.shouldNotify,
                 onChanged: null
               ),
