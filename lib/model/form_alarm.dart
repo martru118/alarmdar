@@ -34,7 +34,7 @@ class _AlarmFormState extends State<AlarmForm> {
   int hash, timestamp;
   int recurrenceOption;
   DateTime start;
-  var minimum, alarmName, description, location;
+  var minDate, maxDate, alarmName, description, location;
 
   @override
   void initState() {
@@ -65,8 +65,9 @@ class _AlarmFormState extends State<AlarmForm> {
     }
 
     //initialize time picker
-    if (start.isBefore(now)) start = DateTime(now.year, now.month, now.day, start.hour, start.minute);
-    minimum = new DateTime(now.year, now.month, now.day, 0, 0);
+    if (start.isBefore(now)) start = new DateTime(now.year, now.month, now.day, start.hour, start.minute);
+    minDate = new DateTime(now.year, now.month, now.day, 0, 0);
+    maxDate = new DateTime(now.year + 1, 12, 31, 23, 59);
   }
 
   @override
@@ -110,8 +111,8 @@ class _AlarmFormState extends State<AlarmForm> {
                         child: CupertinoDatePicker(
                           mode: CupertinoDatePickerMode.dateAndTime,
                           initialDateTime: start,
-                          minimumDate: minimum,
-                          maximumDate: start.add(new Duration(days: 366)),
+                          minimumDate: minDate,
+                          maximumDate: maxDate,
                           use24hFormat: MediaQuery.of(context).alwaysUse24HourFormat,
                           onDateTimeChanged: (datetime) {
                             HapticFeedback.selectionClick();
@@ -119,7 +120,7 @@ class _AlarmFormState extends State<AlarmForm> {
                             //set time
                             start = datetime;
                             timestamp = helper.getTimeStamp(start);
-                            print("AlarmFrom/CupertinoDatePicker::time = $datetime");
+                            print("Selected time is $datetime");
                           },
                         ),
                       ),
@@ -150,7 +151,7 @@ class _AlarmFormState extends State<AlarmForm> {
                                 ),
                               ),
                             );
-                          }),
+                          }, growable: false),
                           onChanged: (value) => setState(() => recurrenceOption = value),
                         ),
                       ]
