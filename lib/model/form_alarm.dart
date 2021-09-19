@@ -9,7 +9,7 @@ import 'alarm_info.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../util/firebase_utils.dart';
+import '../util/firestore_utils.dart';
 
 class AlarmForm extends StatefulWidget {
   static const String route = "/form";
@@ -169,7 +169,8 @@ class _AlarmFormState extends State<AlarmForm> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       //alarm message
-                      Row(mainAxisAlignment: MainAxisAlignment.center,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [Text("An alarm will ring at the above times")],
                       ),
 

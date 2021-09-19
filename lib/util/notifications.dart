@@ -9,7 +9,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
-import 'firebase_utils.dart';
+import 'firestore_utils.dart';
 
 class NotificationService {
   final String channelID = 'alarmsChannel';
@@ -87,18 +87,6 @@ class NotificationService {
   void cancel(int id) async {
     try {
       await localNotifications.cancel(id);
-    } catch (e) {
-      e.toString();
-    }
-  }
-
-  Future<List<PendingNotificationRequest>> getPendingRequests() async {
-    return localNotifications.pendingNotificationRequests();
-  }
-
-  void cancelPendingRequests() async {
-    try {
-      await localNotifications.cancelAll();
     } catch (e) {
       e.toString();
     }

@@ -1,7 +1,5 @@
-import 'package:alarmdar/model/form_alarm.dart';
-import 'package:alarmdar/model/list_alarms.dart';
 import 'package:alarmdar/util/date_utils.dart';
-import 'package:alarmdar/util/firebase_utils.dart';
+import 'package:alarmdar/util/firestore_utils.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import 'alarm_info.dart';
+import 'form_alarm.dart';
+import 'list_alarms.dart';
 
 class AlarmPreview extends StatefulWidget {
   static const String route = "/preview";
@@ -168,7 +168,7 @@ class _PreviewState extends State<AlarmPreview> {
         }
       );
 
-    //show edit actions when not ringing
+    //show edit actions by default
     } else {
       return BottomAppBar(
         color: Theme.of(context).primaryColor,
@@ -184,7 +184,7 @@ class _PreviewState extends State<AlarmPreview> {
               onPressed: () {
                 //copy alarm info to clipboard
                 Clipboard.setData(ClipboardData(
-                  text: "${alarm.start}\n${alarm.name}\n\n${alarm.description}"
+                  text: "${alarm.name}\n${alarm.start}\n\n${alarm.description}"
                 ));
 
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -206,13 +206,13 @@ class _PreviewState extends State<AlarmPreview> {
               icon: const Icon(Icons.delete),
               onPressed: () {
                 //delete current alarm
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text("Alarm has been deleted"),
-                ));
-
                 db.deleteData(selected.toString());
                 notifications.cancel(selected);
                 Navigator.pop(context);
+
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text("Alarm has been deleted"),
+                ));
               },
             ),
           ]),
@@ -271,7 +271,7 @@ class _PreviewState extends State<AlarmPreview> {
   }
 
   void startForm(BuildContext context, AlarmInfo alarmInfo) async {
-    print("AlarmPreview/startForm::alarmInfo = ${alarmInfo.toJson()}");
+    print("Edit alarm with info ${alarmInfo.toJson()}");
 
     //listen for updates
     final listener = await Navigator.of(context).pushNamed(AlarmForm.route, arguments: ScreenArguments(

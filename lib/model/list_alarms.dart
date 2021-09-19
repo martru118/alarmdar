@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import 'alarm_info.dart';
-import '../util/firebase_utils.dart';
+import '../util/firestore_utils.dart';
 
 class AlarmsList extends StatefulWidget {
   static const String route = "/list";
@@ -126,12 +126,12 @@ class _ListState extends State<AlarmsList> {
         ),
       ),
       onDismissed: (direction) {
-        //delete current alarm
         selected = alarmInfo.hashcode;
 
         if (selected != null) {
           print("Delete alarm $selected");
 
+          //delete selected alarm
           db.deleteData(selected.toString());
           notifications.cancel(selected);
           selected = null;
@@ -145,7 +145,7 @@ class _ListState extends State<AlarmsList> {
   }
 
   void getPreview(BuildContext context, AlarmInfo alarmInfo) async {
-    print("AlarmsList/getPreview::alarmInfo = ${alarmInfo.toJson()}");
+    print("Preview alarm with info ${alarmInfo.toJson()}");
 
     //push route to alarm preview
     await Navigator.of(context).pushNamed(AlarmPreview.route, arguments: ScreenArguments(
@@ -157,7 +157,7 @@ class _ListState extends State<AlarmsList> {
   }
 
   void startForm(BuildContext context, String title, [AlarmInfo alarmInfo]) async {
-    print("AlarmsList/startForm");
+    print("Start form for setting or editing an alarm");
 
     //push route to alarm form
     await Navigator.of(context).pushNamed(AlarmForm.route, arguments: ScreenArguments(
