@@ -109,17 +109,15 @@ class _PreviewState extends State<AlarmPreview> {
 
   Widget buildAppBar(BuildContext context, bool isRinging) {
     //change app bar when alarm rings
-    if (isRinging)
-      return AppBar(title: Text("Alarmdar"), centerTitle: true);
-    else
-      return AppBar(leading: BackButton(), title: Text("Alarm Details"));
+    if (isRinging) return AppBar(title: Text("Alarmdar"), centerTitle: true);
+    else return AppBar(leading: BackButton(), title: Text("Alarm Details"));
   }
   
   Widget buildBottomBar(BuildContext context, bool isRinging) {
     //show ringer actions when alarm rings
     if (isRinging) {
       return BottomNavigationBar(
-        type: BottomNavigationBarType.shifting,
+        type: BottomNavigationBarType.fixed,
         unselectedItemColor: Theme.of(context).colorScheme.secondary,
         items: [
           BottomNavigationBarItem(
@@ -132,16 +130,19 @@ class _PreviewState extends State<AlarmPreview> {
           ),
         ],
         onTap: (index) {
+          notifications.cancel(selected);
+
           switch (index) {
             //snooze alarm
             case 0:
-              //schedule new notification for 5 minutes later
+              print("Alarm has been put on snooze");
               DateTime snooze = new DateTime.now().add(new Duration(minutes: 5));
               notifications.schedule(alarm, snooze.millisecondsSinceEpoch);
               break;
 
             //dismiss alarm
             case 1:
+              print("Alarm has been dismissed");
               DateTime current = DateFormat.yMMMEd().add_jm().parse(alarm.start);
               DateTime next = helper.nextAlarm(current, alarm.option);
 
@@ -163,8 +164,7 @@ class _PreviewState extends State<AlarmPreview> {
           }
 
           //go back to homepage
-          notifications.cancel(selected);
-          RouteGenerator.push(AlarmsList());
+          Navigator.of(context).pushReplacementNamed(AlarmsList.route);
         }
       );
 

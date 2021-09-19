@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:alarmdar/model/list_alarms.dart';
-import 'package:alarmdar/util/routes.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -19,7 +18,7 @@ class _SplashState extends State<SplashScreen> {
     //show splash screen for a few seconds
     Future.delayed(const Duration(seconds: 3), () {
       print("Exit splash screen");
-      RouteGenerator.push(AlarmsList());
+      Navigator.of(context).pushReplacementNamed(AlarmsList.route);
     });
   }
 

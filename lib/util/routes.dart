@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 class RouteGenerator {
   static final navigatorKey = new GlobalKey<NavigatorState>();
+  static NavigatorState get _router => navigatorKey.currentState;
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     final args = settings.arguments;
@@ -38,21 +39,17 @@ class RouteGenerator {
 
       //show the splash screen
       case SplashScreen.route:
-        return MaterialPageRoute(builder: (context) {
-          return SplashScreen();
-        });
+        return MaterialPageRoute(builder: (context) => SplashScreen());
 
       //show a list of alarms
       default:
-        return CupertinoPageRoute(builder: (context) {
-          return AlarmsList();
-        });
+        return CupertinoPageRoute(builder: (context) => AlarmsList());
     }
   }
 
   //push an activity without context
-  static void push(Widget activity) {
-    navigatorKey.currentState.pushAndRemoveUntil(
+  static void push(Widget activity) async {
+    _router.pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => activity),
       (Route<dynamic> route) => false,
     );
