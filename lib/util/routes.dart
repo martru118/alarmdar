@@ -1,4 +1,3 @@
-import 'package:alarmdar/splash.dart';
 import 'package:alarmdar/model/alarm_info.dart';
 import 'package:alarmdar/model/preview_alarm.dart';
 import 'package:alarmdar/model/form_alarm.dart';
@@ -37,13 +36,8 @@ class RouteGenerator {
           );
         });
 
-      //show the splash screen
-      case SplashScreen.route:
-        return MaterialPageRoute(builder: (context) => SplashScreen());
-
       //show a list of alarms
-      default:
-        return CupertinoPageRoute(builder: (context) => AlarmsList());
+      default: return MaterialPageRoute(builder: (context) => AlarmsList());
     }
   }
 

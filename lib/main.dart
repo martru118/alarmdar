@@ -1,4 +1,4 @@
-import 'package:alarmdar/splash.dart';
+import 'package:alarmdar/model/list_alarms.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,21 +9,19 @@ void main() async {
   await Firebase.initializeApp();
   NotificationService().init();
 
-  runApp(Alarmdar());
+  runApp(Main());
 }
 
-class Alarmdar extends StatelessWidget {
+class Main extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final String title = this.runtimeType.toString();
-
     return MaterialApp(
-      title: title,
+      title: "Alarmdar",
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.system,
 
       //route settings
-      home: SplashScreen(),
+      home: AlarmsList(),
       onGenerateRoute: (settings) => RouteGenerator.generateRoute(settings),
       navigatorKey: RouteGenerator.navigatorKey,
 
@@ -34,8 +32,11 @@ class Alarmdar extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.teal,
+        colorScheme: ColorScheme.fromSwatch(
+          brightness: Brightness.dark,
+          primarySwatch: Colors.blue,
+          accentColor: Colors.blueAccent,
+        ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
     );
