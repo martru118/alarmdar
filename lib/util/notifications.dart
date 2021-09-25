@@ -1,10 +1,9 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:alarmdar/model/alarm_info.dart';
 import 'package:alarmdar/model/preview_alarm.dart';
 import 'package:alarmdar/util/routes.dart';
-import 'package:alarmdar/util/firestore_utils.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'package:timezone/data/latest.dart' as tz;
@@ -32,20 +31,15 @@ class NotificationService {
     var initSettings = InitializationSettings(android: initAndroid);
     _localNotifications.initialize(
       initSettings,
-      onSelectNotification: onSelectNotification,
+      onSelectNotification: _onSelectNotification,
     );
 
     //launch app from notification
     _appLaunchDetails = await _localNotifications.getNotificationAppLaunchDetails();
     if (_appLaunchDetails.didNotificationLaunchApp) {
       var payload = _appLaunchDetails.payload;
-      onSelectNotification(payload);
+      _onSelectNotification(payload);
     }
-
-    //retrieve alarm uri from method channel
-    final MethodChannel platform = MethodChannel("MethodChannel");
-    final String alarmUri = await platform.invokeMethod("getAlarmUri");
-    const int flag = 4;
 
     //setup a notification channel
     var androidChannel = AndroidNotificationDetails(
@@ -58,19 +52,19 @@ class NotificationService {
       playSound: true,
       sound: RawResourceAndroidNotificationSound("remix"),
       enableVibration: true,
-      additionalFlags: Int32List.fromList([flag]),
+      enableLights: true,
+      additionalFlags: Int32List.fromList(const [4]),
     );
 
     _channelInfo = NotificationDetails(android: androidChannel);
   }
 
-  Future onSelectNotification(var payload) async {
-    final db = new AlarmModel();
+  Future _onSelectNotification(String payload) async {
     print("Send payload $payload");
 
     //show preview when alarm rings
     if (payload != null) {
-      AlarmInfo alarmInfo = await db.retrievebyID(payload.toString());
+      AlarmInfo alarmInfo = AlarmInfo.fromMap(jsonDecode(payload));
       RouteGenerator.push(AlarmPreview(alarmInfo: alarmInfo, isRinging: true));
     }
   }
@@ -86,7 +80,7 @@ class NotificationService {
       alarmInfo.description,
       when,
       _channelInfo,
-      payload: alarmInfo.hashcode.toString(),
+      payload: jsonEncode(alarmInfo.toJson()),
       androidAllowWhileIdle: true,
     );
   }

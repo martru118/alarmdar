@@ -42,11 +42,10 @@ class RouteGenerator {
   }
 
   //push an activity without context
-  static void push(Widget activity) async {
-    _router.pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => activity),
-      (Route<dynamic> route) => false,
-    );
+  static void push(Widget activity) {
+    Future.delayed(Duration.zero, () {
+      _router.push(MaterialPageRoute(builder: (_) => activity));
+    });
   }
 }
 

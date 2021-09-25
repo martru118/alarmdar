@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 
 import 'alarm_info.dart';
 import 'form_alarm.dart';
-import 'list_alarms.dart';
 
 class AlarmPreview extends StatefulWidget {
   static const String route = "/preview";
@@ -164,14 +163,13 @@ class _PreviewState extends State<AlarmPreview> {
           }
 
           //go back to homepage
-          Navigator.of(context).pushReplacementNamed(AlarmsList.route);
+          Navigator.pop(context);
         }
       );
 
     //show edit actions by default
     } else {
       return BottomAppBar(
-        color: Theme.of(context).primaryColor,
         shape: null,
         child: IconTheme(
           data: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
