@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:alarmdar/model/alarm_info.dart';
 import 'package:alarmdar/model/preview_alarm.dart';
 import 'package:alarmdar/util/routes.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'package:timezone/data/latest.dart' as tz;
@@ -27,7 +28,7 @@ class NotificationService {
     tz.initializeTimeZones();
 
     //plugin setup
-    var initAndroid = AndroidInitializationSettings('app_icon');
+    var initAndroid = AndroidInitializationSettings("ic_notification");
     var initSettings = InitializationSettings(android: initAndroid);
     _localNotifications.initialize(
       initSettings,
@@ -42,6 +43,7 @@ class NotificationService {
     }
 
     //setup a notification channel
+    List<int> flags = const [4];
     var androidChannel = AndroidNotificationDetails(
       _channelID,
       _channelName,
@@ -49,11 +51,12 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.max,
       fullScreenIntent: true,
+      color: const Color.fromARGB(255, 3, 169, 244),
       playSound: true,
       sound: RawResourceAndroidNotificationSound("remix"),
       enableVibration: true,
       enableLights: true,
-      additionalFlags: Int32List.fromList(const [4]),
+      additionalFlags: Int32List.fromList(flags),
     );
 
     _channelInfo = NotificationDetails(android: androidChannel);

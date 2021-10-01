@@ -171,6 +171,7 @@ class _PreviewState extends State<AlarmPreview> {
     } else {
       return BottomAppBar(
         shape: null,
+        color: Theme.of(context).primaryColor,
         child: IconTheme(
           data: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
           child: Row(children: [
