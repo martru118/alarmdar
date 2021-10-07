@@ -1,14 +1,13 @@
 import 'package:alarmdar/util/date_utils.dart';
-import 'package:alarmdar/util/firestore_utils.dart';
+import 'package:alarmdar/util/gestures.dart';
 import 'package:alarmdar/util/notifications.dart';
-import 'package:alarmdar/util/routes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import 'alarm_info.dart';
-import 'form_alarm.dart';
 
 class AlarmPreview extends StatefulWidget {
   static const String route = "/preview";
@@ -25,94 +24,119 @@ class AlarmPreview extends StatefulWidget {
 }
 
 class _PreviewState extends State<AlarmPreview> {
-  final db = new AlarmModel();
-  final helper = new DateTimeHelper();
-  final notifications = NotificationService();
+  var gestures = GesturesProvider();
+  final helper = DateTimeHelper();
   static const double pad = 14;
 
   //initialize ui
-  AlarmInfo alarm;
   bool ringing;
   int selected;
 
   @override
   void initState() {
     super.initState();
-    alarm = widget.alarmInfo;
+    gestures = Provider.of<GesturesProvider>(context, listen: false);
+    gestures.setAlarm = widget.alarmInfo;
+
     ringing = widget.isRinging;
     selected = widget.alarmInfo.hashcode;
   }
 
   @override
+  void dispose() {
+    gestures.setAlarm = null;
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        appBar: buildAppBar(context, ringing),
-        body: SingleChildScrollView(
-          padding: EdgeInsets.all(pad/2),
-          child: Column(
-            children: [
-              //alarm name and description
-              Card(
-                elevation: pad/2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-                child: ListTile(
-                  leading: const Icon(Icons.event),
-                  title: SelectableText("${alarm.name}", textScaleFactor: 1.5,
-                      style: TextStyle(fontWeight: FontWeight.bold)
+      child: Consumer<GesturesProvider>(
+        builder: (context, provider, child) {
+          final alarmInfo = provider.getAlarm;
+
+          //dynamic app layout
+          return Scaffold(
+            appBar: buildAppBar(context, alarmInfo, ringing),
+            body: SingleChildScrollView(
+              padding: EdgeInsets.all(pad/2),
+              child: Column(
+                children: [
+                  //alarm name and description
+                  Card(
+                    elevation: pad/2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+                    child: ListTile(
+                      leading: const Icon(Icons.event),
+                      title: SelectableText("${alarmInfo.name}", textScaleFactor: 1.5,
+                          style: TextStyle(fontWeight: FontWeight.bold)
+                      ),
+                      subtitle: SelectableText("${alarmInfo.description}", textScaleFactor: 1.5),
+                    ),
                   ),
-                  subtitle: SelectableText("${alarm.description}", textScaleFactor: 1.5),
-                ),
-              ),
 
-              Card(
-                elevation: pad/2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-                child: Container(
-                  padding: EdgeInsets.all(pad/2),
-                  child: Column(
-                    children: [
-                      //alarm date and time
-                      ListTile(
-                        leading: const Icon(Icons.access_time),
-                        title: SelectableText("${alarm.start}"),
-                      ),
+                  Card(
+                    elevation: pad/2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+                    child: Container(
+                      padding: EdgeInsets.all(pad/2),
+                      child: Column(
+                        children: [
+                          //alarm date and time
+                          ListTile(
+                            leading: const Icon(Icons.access_time),
+                            title: SelectableText("${alarmInfo.start}"),
+                          ),
 
-                      //alarm recurrences
-                      ListTile(
-                        leading: const Icon(Icons.repeat),
-                        title: SelectableText("${helper.recurrences[alarm.option]}"),
-                      ),
+                          //alarm recurrences
+                          ListTile(
+                            leading: const Icon(Icons.repeat),
+                            title: SelectableText("${helper.recurrences[alarmInfo.option]}"),
+                          ),
 
-                      //location details
-                      ListTile(
-                        leading: const Icon(Icons.location_pin),
-                        title: SelectableText(alarm.location.isEmpty?
-                            "Location not specified" : "${alarm.location}"
-                        ),
+                          //location details
+                          ListTile(
+                            leading: const Icon(Icons.location_pin),
+                            title: SelectableText(alarmInfo.location.isEmpty?
+                                "Location not specified" : "${alarmInfo.location}"
+                            ),
+                          ),
+                        ]
                       ),
-                    ]
+                    ),
                   ),
-                ),
+                ]
               ),
-            ]
-          )
-        ),
+            ),
 
-        bottomNavigationBar: buildBottomBar(context, ringing),
-        floatingActionButton: buildFab(context, ringing),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+            bottomNavigationBar: buildBottomBar(context, alarmInfo, ringing),
+            floatingActionButton: buildFab(context, alarmInfo, ringing),
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+          );
+        },
       ),
     );
   }
 
-  Widget buildAppBar(BuildContext context, bool isRinging) {
+  Widget buildAppBar(BuildContext context, AlarmInfo alarm, bool isRinging) {
     //change app bar when alarm rings
-    if (isRinging) return AppBar(title: Text("Alarmdar"), centerTitle: true);
-    else return AppBar(leading: BackButton(), title: Text("Alarm Details"));
+    if (isRinging) {
+      return AppBar(
+        leading: BackButton(
+          onPressed: () {
+            nextNotification(0, alarm);
+            Navigator.pop(context);
+          }
+        ),
+        title: Text("Alarmdar"),
+        centerTitle: true,
+      );
+    } else {
+      return AppBar(title: Text("Alarm Details"));
+    }
   }
   
-  Widget buildBottomBar(BuildContext context, bool isRinging) {
+  Widget buildBottomBar(BuildContext context, AlarmInfo alarm, bool isRinging) {
     //show ringer actions when alarm rings
     if (isRinging) {
       return BottomNavigationBar(
@@ -120,7 +144,7 @@ class _PreviewState extends State<AlarmPreview> {
         unselectedItemColor: Theme.of(context).colorScheme.secondary,
         items: [
           BottomNavigationBarItem(
-            label: "Snooze\n(5 mins)",
+            label: "Snooze\n(10 mins)",
             icon: Icon(Icons.snooze),
           ),
           BottomNavigationBarItem(
@@ -129,40 +153,7 @@ class _PreviewState extends State<AlarmPreview> {
           ),
         ],
         onTap: (index) {
-          notifications.cancel(selected);
-
-          switch (index) {
-            //snooze alarm
-            case 0:
-              print("Alarm has been put on snooze");
-              DateTime snooze = new DateTime.now().add(new Duration(minutes: 5));
-              notifications.schedule(alarm, snooze.millisecondsSinceEpoch);
-              break;
-
-            //dismiss alarm
-            case 1:
-              print("Alarm has been dismissed");
-              DateTime current = DateFormat.yMMMEd().add_jm().parse(alarm.start);
-              DateTime next = helper.nextAlarm(current, alarm.option);
-
-              if (next == null) {
-                //turn off alarm if it does not repeat
-                alarm.shouldNotify = false;
-                db.storeData(alarm);
-              } else {
-                int newStamp = helper.getTimeStamp(next);
-
-                //schedule next alarm
-                alarm.start = DateFormat.yMMMEd().add_jm().format(next);
-                alarm.timestamp = newStamp;
-                db.storeData(alarm);
-                notifications.schedule(alarm, newStamp);
-              }
-
-              break;
-          }
-
-          //go back to homepage
+          nextNotification(index, alarm);
           Navigator.pop(context);
         }
       );
@@ -182,12 +173,9 @@ class _PreviewState extends State<AlarmPreview> {
               icon: const Icon(Icons.copy),
               onPressed: () {
                 //copy alarm info to clipboard
+                gestures.snackbar(context, "Copied to clipboard");
                 Clipboard.setData(ClipboardData(
                   text: "${alarm.name}\n${alarm.start}\n\n${alarm.description}"
-                ));
-
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text("Copied to clipboard"),
                 ));
               },
             ), Spacer(),
@@ -196,7 +184,9 @@ class _PreviewState extends State<AlarmPreview> {
             IconButton(
               tooltip: 'Edit',
               icon: const Icon(Icons.edit),
-              onPressed: () => startForm(context, alarm),
+              onPressed: () {
+                Provider.of<GesturesProvider>(context, listen: false).setEdit(context, 1, alarm);
+              }
             ),
 
             //delete button
@@ -204,14 +194,9 @@ class _PreviewState extends State<AlarmPreview> {
               tooltip: 'Delete',
               icon: const Icon(Icons.delete),
               onPressed: () {
-                //delete current alarm
-                db.deleteData(selected.toString());
-                notifications.cancel(selected);
+                gestures.snackbar(context, "Alarm has been removed");
+                gestures.remove(selected);
                 Navigator.pop(context);
-
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text("Alarm has been deleted"),
-                ));
               },
             ),
           ]),
@@ -220,19 +205,17 @@ class _PreviewState extends State<AlarmPreview> {
     }
   }
 
-  Widget buildFab(BuildContext context, bool isRinging) {
-    if (!isRinging) {
+  Widget buildFab(BuildContext context, AlarmInfo alarm, bool isRinging) {
+    if (isRinging) {
+      return null;
+    } else {
       //turn off alarm
       if (alarm.shouldNotify) {
         return FloatingActionButton.extended(
           label: Text("Turn OFF"),
           icon: const Icon(CupertinoIcons.bell_slash_fill),
           onPressed: () {
-            alarm.shouldNotify = false;
-            db.storeData(alarm);
-
-            //cancel notification
-            notifications.cancel(selected);
+            gestures.archive(alarm);
             Navigator.pop(context);
           }
         );
@@ -245,43 +228,49 @@ class _PreviewState extends State<AlarmPreview> {
           onPressed: () {
             int currentTime = DateTime.now().millisecondsSinceEpoch;
 
-            //alarm is in the future
             if (alarm.timestamp > currentTime) {
-              alarm.shouldNotify = true;
-              db.storeData(alarm);
-
-              //schedule alarm
-              notifications.schedule(alarm, alarm.timestamp);
+              //alarm is in the future
+              gestures.restore(alarm);
               Navigator.pop(context);
-
-            //alarm is in the past
             } else {
-              startForm(context, alarm);
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text("Please choose a time in the future"),
-              ));
+              //alarm is in the past
+              gestures.snackbar(context, "Please choose a time in the future");
+              Provider.of<GesturesProvider>(context, listen: false).setEdit(context, 1, alarm);
             }
           }
         );
       }
-    } else {
-      return null;
     }
   }
 
-  void startForm(BuildContext context, AlarmInfo alarmInfo) async {
-    print("Edit alarm with info ${alarmInfo.toJson()}");
+  void nextNotification(int action, AlarmInfo alarm) {
+    final notifications = NotificationService();
+    notifications.cancel(alarm.hashcode);
 
-    //listen for updates
-    final listener = await Navigator.of(context).pushNamed(AlarmForm.route, arguments: ScreenArguments(
-      alarmInfo: alarmInfo,
-      title: "Edit Alarm",
-    ));
+    switch (action) {
+      //snooze alarm
+      case 0:
+        gestures.toast("Alarm is snoozed for 10 minutes");
+        DateTime snooze = new DateTime.now().add(new Duration(minutes: 10));
+        notifications.schedule(alarm, snooze.millisecondsSinceEpoch);
+        break;
 
-    //update alarm details
-    if (listener != null) {
-      print("Listening for updates: $listener");
-      setState(() => alarm = listener as AlarmInfo);
+      //dismiss alarm
+      case 1:
+        DateTime current = DateFormat.yMMMEd().add_jm().parse(alarm.start);
+        DateTime next = helper.nextAlarm(current, alarm.option);
+
+        if (next == null) {
+          //turn off alarm if it does not repeat
+          gestures.archive(alarm);
+        } else {
+          //schedule next alarm
+          alarm.start = DateFormat.yMMMEd().add_jm().format(next);
+          alarm.timestamp = helper.getTimeStamp(next);
+          gestures.restore(alarm);
+        }
+
+        break;
     }
   }
 }
