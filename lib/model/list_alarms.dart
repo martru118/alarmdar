@@ -1,5 +1,5 @@
 import 'package:alarmdar/model/preview_alarm.dart';
-import 'package:alarmdar/model/form_alarm.dart';
+import 'package:alarmdar/util/gestures.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,7 +11,7 @@ import 'alarm_info.dart';
 import '../util/firestore_utils.dart';
 
 class AlarmsList extends StatefulWidget {
-  static const String route = "/list";
+  static const String route = "/";
   AlarmsList({Key key}): super(key: key);
 
   @override
@@ -20,23 +20,20 @@ class AlarmsList extends StatefulWidget {
 
 class _ListState extends State<AlarmsList> {
   final db = new AlarmModel();
+  final gestures = GesturesProvider();
   final notifications = NotificationService();
-
   static const double pad = 14;
-  int selected;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(title: Text("Your Alarms")),
-        body: buildList(),
-        floatingActionButton: FloatingActionButton(
-          tooltip: "New Alarm",
-          child: const Icon(Icons.add),
-          onPressed: () => startForm(context, "Set Alarm"),
-        )
-      ),
+    return Scaffold(
+      appBar: AppBar(title: Text("Your Alarms")),
+      body: buildList(),
+      floatingActionButton: FloatingActionButton(
+        tooltip: "New Alarm",
+        child: const Icon(Icons.add, color: Colors.white),
+        onPressed: () => gestures.setEdit(context, 0),
+      )
     );
   }
 
@@ -117,54 +114,27 @@ class _ListState extends State<AlarmsList> {
           ),
 
           //item gestures
-          onTap: () => getPreview(context, alarmInfo),
+          onTap: () {
+            //show alarm preview
+            Navigator.of(context).pushNamed(
+              AlarmPreview.route,
+              arguments: ScreenArguments(
+                alarmInfo: alarmInfo,
+                isRinging: false,
+            ));
+          },
           onLongPress: () {
             //shortcut for editing selected alarms
             HapticFeedback.selectionClick();
-            startForm(context, "Edit Alarm", alarmInfo);
+            gestures.setEdit(context, 1, alarmInfo);
           },
         ),
       ),
       onDismissed: (direction) {
-        selected = alarmInfo.hashcode;
-
-        if (selected != null) {
-          print("Delete alarm $selected");
-
-          //delete selected alarm
-          db.deleteData(selected.toString());
-          notifications.cancel(selected);
-          selected = null;
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Alarm has been deleted"),
-        ));
+        //swipe to delete alarm
+        gestures.snackbar(context, "Alarm has been removed");
+        gestures.remove(alarmInfo.hashcode);
       },
     );
-  }
-
-  void getPreview(BuildContext context, AlarmInfo alarmInfo) async {
-    print("Preview alarm with info ${alarmInfo.toJson()}");
-
-    //push route to alarm preview
-    await Navigator.of(context).pushNamed(AlarmPreview.route, arguments: ScreenArguments(
-      alarmInfo: alarmInfo,
-      isRinging: false,
-    ));
-
-    selected = null;
-  }
-
-  void startForm(BuildContext context, String title, [AlarmInfo alarmInfo]) async {
-    print("Start form for setting or editing an alarm");
-
-    //push route to alarm form
-    await Navigator.of(context).pushNamed(AlarmForm.route, arguments: ScreenArguments(
-      alarmInfo: alarmInfo,
-      title: title,
-    ));
-
-    selected = null;
   }
 }

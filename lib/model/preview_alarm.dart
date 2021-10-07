@@ -50,71 +50,69 @@ class _PreviewState extends State<AlarmPreview> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Consumer<GesturesProvider>(
-        builder: (context, provider, child) {
-          final alarmInfo = provider.getAlarm;
+    return Consumer<GesturesProvider>(
+      builder: (context, provider, child) {
+        final alarmInfo = provider.getAlarm;
 
-          //dynamic app layout
-          return Scaffold(
-            appBar: buildAppBar(context, alarmInfo, ringing),
-            body: SingleChildScrollView(
-              padding: EdgeInsets.all(pad/2),
-              child: Column(
-                children: [
-                  //alarm name and description
-                  Card(
-                    elevation: pad/2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-                    child: ListTile(
-                      leading: const Icon(Icons.event),
-                      title: SelectableText("${alarmInfo.name}", textScaleFactor: 1.5,
-                          style: TextStyle(fontWeight: FontWeight.bold)
-                      ),
-                      subtitle: SelectableText("${alarmInfo.description}", textScaleFactor: 1.5),
+        //dynamic app layout
+        return Scaffold(
+          appBar: buildAppBar(context, alarmInfo, ringing),
+          body: SingleChildScrollView(
+            padding: EdgeInsets.all(pad/2),
+            child: Column(
+              children: [
+                //alarm name and description
+                Card(
+                  elevation: pad/2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+                  child: ListTile(
+                    leading: const Icon(Icons.event),
+                    title: SelectableText("${alarmInfo.name}", textScaleFactor: 1.5,
+                        style: TextStyle(fontWeight: FontWeight.bold)
+                    ),
+                    subtitle: SelectableText("${alarmInfo.description}", textScaleFactor: 1.5),
+                  ),
+                ),
+
+                Card(
+                  elevation: pad/2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+                  child: Container(
+                    padding: EdgeInsets.all(pad/2),
+                    child: Column(
+                      children: [
+                        //alarm date and time
+                        ListTile(
+                          leading: const Icon(Icons.access_time),
+                          title: SelectableText("${alarmInfo.start}"),
+                        ),
+
+                        //alarm recurrences
+                        ListTile(
+                          leading: const Icon(Icons.repeat),
+                          title: SelectableText("${helper.recurrences[alarmInfo.option]}"),
+                        ),
+
+                        //location details
+                        ListTile(
+                          leading: const Icon(Icons.location_pin),
+                          title: SelectableText(alarmInfo.location.isEmpty?
+                              "Location not specified" : "${alarmInfo.location}"
+                          ),
+                        ),
+                      ]
                     ),
                   ),
-
-                  Card(
-                    elevation: pad/2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-                    child: Container(
-                      padding: EdgeInsets.all(pad/2),
-                      child: Column(
-                        children: [
-                          //alarm date and time
-                          ListTile(
-                            leading: const Icon(Icons.access_time),
-                            title: SelectableText("${alarmInfo.start}"),
-                          ),
-
-                          //alarm recurrences
-                          ListTile(
-                            leading: const Icon(Icons.repeat),
-                            title: SelectableText("${helper.recurrences[alarmInfo.option]}"),
-                          ),
-
-                          //location details
-                          ListTile(
-                            leading: const Icon(Icons.location_pin),
-                            title: SelectableText(alarmInfo.location.isEmpty?
-                                "Location not specified" : "${alarmInfo.location}"
-                            ),
-                          ),
-                        ]
-                      ),
-                    ),
-                  ),
-                ]
-              ),
+                ),
+              ]
             ),
+          ),
 
-            bottomNavigationBar: buildBottomBar(context, alarmInfo, ringing),
-            floatingActionButton: buildFab(context, alarmInfo, ringing),
-            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-          );
-        },
-      ),
+          bottomNavigationBar: buildBottomBar(context, alarmInfo, ringing),
+          floatingActionButton: buildFab(context, alarmInfo, ringing),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        );
+      },
     );
   }
 
@@ -141,7 +139,8 @@ class _PreviewState extends State<AlarmPreview> {
     if (isRinging) {
       return BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        unselectedItemColor: Theme.of(context).colorScheme.secondary,
+        unselectedItemColor: Colors.white,
+        backgroundColor: Theme.of(context).primaryColor,
         items: [
           BottomNavigationBarItem(
             label: "Snooze\n(10 mins)",
@@ -212,8 +211,8 @@ class _PreviewState extends State<AlarmPreview> {
       //turn off alarm
       if (alarm.shouldNotify) {
         return FloatingActionButton.extended(
-          label: Text("Turn OFF"),
-          icon: const Icon(CupertinoIcons.bell_slash_fill),
+          label: Text("Turn OFF", style: TextStyle(color: Colors.white)),
+          icon: const Icon(CupertinoIcons.bell_slash_fill, color: Colors.white),
           onPressed: () {
             gestures.archive(alarm);
             Navigator.pop(context);
@@ -223,8 +222,8 @@ class _PreviewState extends State<AlarmPreview> {
       //turn on alarm
       } else {
         return FloatingActionButton.extended(
-          label: Text("Turn ON"),
-          icon: const Icon(CupertinoIcons.bell_fill),
+          label: Text("Turn ON", style: TextStyle(color: Colors.white)),
+          icon: const Icon(CupertinoIcons.bell_fill, color: Colors.white),
           onPressed: () {
             int currentTime = DateTime.now().millisecondsSinceEpoch;
 

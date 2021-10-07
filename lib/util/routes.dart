@@ -19,9 +19,11 @@ class RouteGenerator {
         return CupertinoPageRoute(builder: (context) {
           ScreenArguments arguments = args;
 
-          return AlarmPreview(
-            alarmInfo: arguments.alarmInfo,
-            isRinging: arguments.isRinging,
+          return SafeArea(
+            child: AlarmPreview(
+              alarmInfo: arguments.alarmInfo,
+              isRinging: arguments.isRinging,
+            ),
           );
         });
 
@@ -30,14 +32,18 @@ class RouteGenerator {
         return CupertinoPageRoute(builder: (context) {
           ScreenArguments arguments = args;
 
-          return AlarmForm(
-            alarmInfo: arguments.alarmInfo,
-            title: arguments.title,
+          return SafeArea(
+            child: AlarmForm(
+              alarmInfo: arguments.alarmInfo,
+              title: arguments.title,
+            ),
           );
         });
 
       //show a list of alarms
-      default: return MaterialPageRoute(builder: (context) => AlarmsList());
+      default: return MaterialPageRoute(builder: (context) {
+        return SafeArea(child: AlarmsList());
+      });
     }
   }
 

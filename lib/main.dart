@@ -27,7 +27,7 @@ class Main extends StatelessWidget {
         themeMode: ThemeMode.system,
 
         //route settings
-        home: AlarmsList(),
+        initialRoute: AlarmsList.route,
         onGenerateRoute: (settings) => RouteGenerator.generateRoute(settings),
         navigatorKey: RouteGenerator.navigatorKey,
 
@@ -41,7 +41,7 @@ class Main extends StatelessWidget {
           colorScheme: ColorScheme.fromSwatch(
             brightness: Brightness.dark,
             primarySwatch: Colors.blue,
-            accentColor: Colors.blueAccent,
+            accentColor: Colors.lightBlue,
           ),
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:alarmdar/util/date_utils.dart';
+import 'package:alarmdar/util/gestures.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -23,11 +24,17 @@ class AlarmForm extends StatefulWidget {
 
   @override
   _AlarmFormState createState() => _AlarmFormState();
+
+  //possible titles for the form
+  static final titles = [
+    "Set Alarm",
+    "Edit Alarm",
+  ];
 }
 
 class _AlarmFormState extends State<AlarmForm> {
-  final helper = new DateTimeHelper();
-  final formKey = new GlobalKey<FormState>();
+  final gestures = GesturesProvider();
+  final helper = DateTimeHelper();
   static const double pad = 12;
 
   //initialize ui
@@ -35,6 +42,7 @@ class _AlarmFormState extends State<AlarmForm> {
   int recurrenceOption;
   DateTime start;
   var minDate, maxDate, alarmName, description, location;
+  final formKey = new GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -80,11 +88,9 @@ class _AlarmFormState extends State<AlarmForm> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(title: Text(widget.title), leading: BackButton()),
-        body: buildForm(context),
-      ),
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.title)),
+      body: buildForm(context),
     );
   }
 
@@ -244,29 +250,23 @@ class _AlarmFormState extends State<AlarmForm> {
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     print("Alarm is scheduled for $timestamp, validated at $currentTime");
 
-    //validate form
+    //set new alarm
     if (timestamp > currentTime) {
       if (formKey.currentState.validate()) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Alarm has been set"),
-        ));
-
-        //get new alarm
-        var onUpdate = setAlarm(alarmName.text, description.text, location.text);
+        gestures.snackbar(context, "Alarm has been set");
+        var onUpdate = newAlarm(alarmName.text, description.text, location.text);
         Navigator.pop(context, onUpdate);
       }
 
     //form is invalid due to time chosen
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Please choose a time in the future"),
-      ));
+      gestures.snackbar(context, "Please choose a time in the future");
     }
   }
 
   //save alarm details to database
-  AlarmInfo setAlarm(String name, String desc, String loc) {
-    final db = new AlarmModel();
+  AlarmInfo newAlarm(String name, String desc, String loc) {
+    final db = AlarmModel();
     final notifications = NotificationService();
 
     AlarmInfo alarm = new AlarmInfo(
