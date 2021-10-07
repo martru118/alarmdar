@@ -1,7 +1,9 @@
 import 'package:alarmdar/model/list_alarms.dart';
+import 'package:alarmdar/util/firestore_utils.dart';
 import 'package:alarmdar/util/gestures.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +21,7 @@ class Main extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider(create: (_) => AlarmsRepository(FirebaseFirestore.instance)),
         ChangeNotifierProvider.value(value: GesturesProvider()),
       ],
       child: MaterialApp(

@@ -3,6 +3,7 @@ import 'package:alarmdar/model/form_alarm.dart';
 import 'package:alarmdar/util/firestore_utils.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -13,7 +14,7 @@ class GesturesProvider extends ChangeNotifier {
   set setAlarm(AlarmInfo alarmInfo) => this._alarm = alarmInfo;
 
   //inject dependencies
-  final _db = new AlarmModel();
+  final _db = new AlarmsRepository(FirebaseFirestore.instance);
   final _notifications = NotificationService();
 
   //actions performed when setting and editing an alarm
@@ -59,7 +60,7 @@ class GesturesProvider extends ChangeNotifier {
   //turn alarm on
   void restore(AlarmInfo alarmInfo) {
     print("Alarm ${alarmInfo.hashcode} is turned ON");
-    toast("Alarm set for ${alarmInfo.start}");
+    toast("Alarm is set for ${alarmInfo.start}");
 
     //reschedule current alarm
     alarmInfo.shouldNotify = true;

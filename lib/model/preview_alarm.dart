@@ -16,7 +16,8 @@ class AlarmDetails extends StatefulWidget {
   AlarmDetails({Key key,
     @required this.alarmInfo,
     @required this.isRinging,
-  }): super(key: key);
+  }): assert(alarmInfo.reference != null),
+      super(key: key);
 
   @override
   State<StatefulWidget> createState() => isRinging? _RingingState() : _PreviewState();
@@ -173,7 +174,6 @@ class _RingingState extends State<AlarmDetails> {
         overflow: TextOverflow.fade,
         softWrap: false,
       ),
-      centerTitle: true,
     );
   }
 

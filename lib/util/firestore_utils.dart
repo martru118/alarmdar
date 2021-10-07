@@ -2,13 +2,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../model/alarm_info.dart';
 
-class AlarmModel {
-  final _db = FirebaseFirestore.instance;
+class AlarmsRepository {
+  final _firestore;
   final String _collectionPath = "alarms";
+
+  AlarmsRepository(this._firestore): assert(_firestore != null);
+
+  //get current Firestore instance
+  dynamic get getInstance => _firestore;
 
   //get alarms from Cloud Firestore
   Stream<QuerySnapshot> retrieveAll() {
-    return _db.collection(_collectionPath)
+    print("Read from database, adding to quota");
+
+    return _firestore.collection(_collectionPath)
         .orderBy("notify", descending: true)
         .orderBy("timestamp")
         .snapshots();
@@ -17,7 +24,7 @@ class AlarmModel {
   //get specific alarms by reference ID
   Future<AlarmInfo> retrievebyID(String path) async {
     AlarmInfo alarmInfo;
-    await _db.collection(_collectionPath).doc(path).get().then((info) {
+    await _firestore.collection(_collectionPath).doc(path).get().then((info) {
       alarmInfo = AlarmInfo.fromMap(info.data(), reference: info.reference);
     });
 
@@ -27,13 +34,13 @@ class AlarmModel {
   //add alarm to database
   void storeData(AlarmInfo alarm) {
     String path = alarm.hashcode.toString();
-    _db.collection(_collectionPath).doc(path).set(alarm.toJson(), SetOptions(merge: true));
+    _firestore.collection(_collectionPath).doc(path).set(alarm.toJson(), SetOptions(merge: true));
   }
 
   //delete alarm
   void deleteData(String path) {
     try {
-      _db.collection(_collectionPath).doc(path).delete();
+      _firestore.collection(_collectionPath).doc(path).delete();
     } catch (e) {
       e.toString();
     }

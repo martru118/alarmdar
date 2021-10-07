@@ -1,11 +1,11 @@
 import 'package:alarmdar/model/preview_alarm.dart';
 import 'package:alarmdar/util/gestures.dart';
-import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import 'alarm_info.dart';
 import '../util/firestore_utils.dart';
@@ -19,10 +19,15 @@ class AlarmsList extends StatefulWidget {
 }
 
 class _ListState extends State<AlarmsList> {
-  final db = new AlarmModel();
   final gestures = GesturesProvider();
-  final notifications = NotificationService();
   static const double pad = 14;
+  Stream listStream;
+
+  @override
+  void initState() {
+    super.initState();
+    listStream = context.read<AlarmsRepository>().retrieveAll();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +44,7 @@ class _ListState extends State<AlarmsList> {
 
   Widget buildList() {
     return StreamBuilder<QuerySnapshot>(
-      stream: db.retrieveAll(),
+      stream: listStream,
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());

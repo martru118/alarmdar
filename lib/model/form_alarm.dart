@@ -2,15 +2,12 @@ import 'dart:math';
 
 import 'package:alarmdar/util/date_utils.dart';
 import 'package:alarmdar/util/gestures.dart';
-import 'package:alarmdar/util/notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import 'alarm_info.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-import '../util/firestore_utils.dart';
 
 class AlarmForm extends StatefulWidget {
   static const String route = "/form";
@@ -20,7 +17,9 @@ class AlarmForm extends StatefulWidget {
   AlarmForm({Key key,
     @required this.alarmInfo,
     @required this.title,
-  }): super(key: key);
+  }): super(key: key) {
+    if (alarmInfo != null) assert(alarmInfo.reference != null);
+  }
 
   @override
   _AlarmFormState createState() => _AlarmFormState();
@@ -253,7 +252,6 @@ class _AlarmFormState extends State<AlarmForm> {
     //set new alarm
     if (timestamp > currentTime) {
       if (formKey.currentState.validate()) {
-        gestures.snackbar(context, "Alarm has been set");
         var onUpdate = newAlarm(alarmName.text, description.text, location.text);
         Navigator.pop(context, onUpdate);
       }
@@ -266,9 +264,6 @@ class _AlarmFormState extends State<AlarmForm> {
 
   //save alarm details to database
   AlarmInfo newAlarm(String name, String desc, String loc) {
-    final db = AlarmModel();
-    final notifications = NotificationService();
-
     AlarmInfo alarm = new AlarmInfo(
       hashcode: hash,
       start: DateFormat.yMMMEd().add_jm().format(start),
@@ -281,8 +276,7 @@ class _AlarmFormState extends State<AlarmForm> {
     );
 
     //schedule alarm
-    db.storeData(alarm);
-    notifications.schedule(alarm, timestamp);
+    gestures.restore(alarm);
     return alarm;
   }
 }
