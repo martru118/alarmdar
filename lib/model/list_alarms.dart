@@ -31,7 +31,7 @@ class _ListState extends State<AlarmsList> {
       body: buildList(),
       floatingActionButton: FloatingActionButton(
         tooltip: "New Alarm",
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add),
         onPressed: () => gestures.setEdit(context, 0),
       )
     );
@@ -117,7 +117,7 @@ class _ListState extends State<AlarmsList> {
           onTap: () {
             //show alarm preview
             Navigator.of(context).pushNamed(
-              AlarmPreview.route,
+              AlarmDetails.route,
               arguments: ScreenArguments(
                 alarmInfo: alarmInfo,
                 isRinging: false,

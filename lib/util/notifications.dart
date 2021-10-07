@@ -68,7 +68,7 @@ class NotificationService {
     //show preview when alarm rings
     if (payload != null) {
       AlarmInfo alarmInfo = AlarmInfo.fromMap(jsonDecode(payload));
-      RouteGenerator.push(AlarmPreview(alarmInfo: alarmInfo, isRinging: true));
+      RouteGenerator.push(AlarmDetails(alarmInfo: alarmInfo, isRinging: true));
     }
   }
 

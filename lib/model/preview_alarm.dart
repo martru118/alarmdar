@@ -9,37 +9,34 @@ import 'package:provider/provider.dart';
 
 import 'alarm_info.dart';
 
-class AlarmPreview extends StatefulWidget {
-  static const String route = "/preview";
+class AlarmDetails extends StatefulWidget {
   final AlarmInfo alarmInfo;
   final bool isRinging;
 
-  AlarmPreview({Key key,
+  AlarmDetails({Key key,
     @required this.alarmInfo,
     @required this.isRinging,
   }): super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _PreviewState();
+  State<StatefulWidget> createState() => isRinging? _RingingState() : _PreviewState();
+
+  static const String route = "/details";
+  static final titles = [
+    "Alarm Details",
+    "Alarmdar",
+  ];
 }
 
-class _PreviewState extends State<AlarmPreview> {
+class _PreviewState extends State<AlarmDetails> {
   var gestures = GesturesProvider();
-  final helper = DateTimeHelper();
-  static const double pad = 14;
-
-  //initialize ui
-  bool ringing;
-  int selected;
 
   @override
   void initState() {
+    //initialize provider
     super.initState();
     gestures = Provider.of<GesturesProvider>(context, listen: false);
     gestures.setAlarm = widget.alarmInfo;
-
-    ringing = widget.isRinging;
-    selected = widget.alarmInfo.hashcode;
   }
 
   @override
@@ -54,208 +51,172 @@ class _PreviewState extends State<AlarmPreview> {
       builder: (context, provider, child) {
         final alarmInfo = provider.getAlarm;
 
-        //dynamic app layout
         return Scaffold(
-          appBar: buildAppBar(context, alarmInfo, ringing),
-          body: SingleChildScrollView(
-            padding: EdgeInsets.all(pad/2),
-            child: Column(
-              children: [
-                //alarm name and description
-                Card(
-                  elevation: pad/2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-                  child: ListTile(
-                    leading: const Icon(Icons.event),
-                    title: SelectableText("${alarmInfo.name}", textScaleFactor: 1.5,
-                        style: TextStyle(fontWeight: FontWeight.bold)
-                    ),
-                    subtitle: SelectableText("${alarmInfo.description}", textScaleFactor: 1.5),
-                  ),
-                ),
-
-                Card(
-                  elevation: pad/2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-                  child: Container(
-                    padding: EdgeInsets.all(pad/2),
-                    child: Column(
-                      children: [
-                        //alarm date and time
-                        ListTile(
-                          leading: const Icon(Icons.access_time),
-                          title: SelectableText("${alarmInfo.start}"),
-                        ),
-
-                        //alarm recurrences
-                        ListTile(
-                          leading: const Icon(Icons.repeat),
-                          title: SelectableText("${helper.recurrences[alarmInfo.option]}"),
-                        ),
-
-                        //location details
-                        ListTile(
-                          leading: const Icon(Icons.location_pin),
-                          title: SelectableText(alarmInfo.location.isEmpty?
-                              "Location not specified" : "${alarmInfo.location}"
-                          ),
-                        ),
-                      ]
-                    ),
-                  ),
-                ),
-              ]
-            ),
-          ),
-
-          bottomNavigationBar: buildBottomBar(context, alarmInfo, ringing),
-          floatingActionButton: buildFab(context, alarmInfo, ringing),
+          appBar: AppBar(title: Text("Alarm Details")),
+          body: _PreviewBody(alarmInfo: alarmInfo),
+          bottomNavigationBar: buildBottomBar(context, alarmInfo),
+          floatingActionButton: buildFab(context, alarmInfo),
           floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         );
       },
     );
   }
-
-  Widget buildAppBar(BuildContext context, AlarmInfo alarm, bool isRinging) {
-    //change app bar when alarm rings
-    if (isRinging) {
-      return AppBar(
-        leading: BackButton(
-          onPressed: () {
-            nextNotification(0, alarm);
-            Navigator.pop(context);
-          }
-        ),
-        title: Text("Alarmdar"),
-        centerTitle: true,
-      );
-    } else {
-      return AppBar(title: Text("Alarm Details"));
-    }
-  }
   
-  Widget buildBottomBar(BuildContext context, AlarmInfo alarm, bool isRinging) {
-    //show ringer actions when alarm rings
-    if (isRinging) {
-      return BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        unselectedItemColor: Colors.white,
-        backgroundColor: Theme.of(context).primaryColor,
-        items: [
-          BottomNavigationBarItem(
-            label: "Snooze\n(10 mins)",
-            icon: Icon(Icons.snooze),
+  Widget buildBottomBar(BuildContext context, AlarmInfo alarm) {
+    return BottomAppBar(
+      shape: null,
+      color: Theme.of(context).primaryColor,
+      child: IconTheme(
+        data: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
+        child: Row(children: [
+
+          //copy button
+          IconButton(
+            tooltip: 'Copy',
+            icon: const Icon(Icons.copy),
+            onPressed: () {
+              //copy alarm info to clipboard
+              gestures.snackbar(context, "Copied to clipboard");
+              Clipboard.setData(ClipboardData(
+                text: "${alarm.name}\n${alarm.start}\n\n${alarm.description}"
+              ));
+            },
+          ), Spacer(),
+
+          //edit button
+          IconButton(
+            tooltip: 'Edit',
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              Provider.of<GesturesProvider>(context, listen: false).setEdit(context, 1, alarm);
+            }
           ),
-          BottomNavigationBarItem(
-            label: "Dismiss",
-            icon: Icon(Icons.close),
+
+          //delete button
+          IconButton(
+            tooltip: 'Delete',
+            icon: const Icon(Icons.delete),
+            onPressed: () {
+              gestures.snackbar(context, "Alarm has been removed");
+              gestures.remove(alarm.hashcode);
+              Navigator.pop(context);
+            },
           ),
-        ],
-        onTap: (index) {
-          nextNotification(index, alarm);
+        ]),
+      ),
+    );
+  }
+
+  Widget buildFab(BuildContext context, AlarmInfo alarm) {
+    if (alarm.shouldNotify) {
+      //turn alarm off
+      return FloatingActionButton.extended(
+        label: Text("Turn OFF"),
+        icon: const Icon(CupertinoIcons.bell_slash_fill),
+        onPressed: () {
+          gestures.archive(alarm);
           Navigator.pop(context);
         }
       );
-
-    //show edit actions by default
     } else {
-      return BottomAppBar(
-        shape: null,
-        color: Theme.of(context).primaryColor,
-        child: IconTheme(
-          data: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
-          child: Row(children: [
+      //turn alarm on
+      return FloatingActionButton.extended(
+        label: Text("Turn ON"),
+        icon: const Icon(CupertinoIcons.bell_fill),
+        onPressed: () {
+          int currentTime = DateTime.now().millisecondsSinceEpoch;
 
-            //copy button
-            IconButton(
-              tooltip: 'Copy',
-              icon: const Icon(Icons.copy),
-              onPressed: () {
-                //copy alarm info to clipboard
-                gestures.snackbar(context, "Copied to clipboard");
-                Clipboard.setData(ClipboardData(
-                  text: "${alarm.name}\n${alarm.start}\n\n${alarm.description}"
-                ));
-              },
-            ), Spacer(),
-
-            //edit button
-            IconButton(
-              tooltip: 'Edit',
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                Provider.of<GesturesProvider>(context, listen: false).setEdit(context, 1, alarm);
-              }
-            ),
-
-            //delete button
-            IconButton(
-              tooltip: 'Delete',
-              icon: const Icon(Icons.delete),
-              onPressed: () {
-                gestures.snackbar(context, "Alarm has been removed");
-                gestures.remove(selected);
-                Navigator.pop(context);
-              },
-            ),
-          ]),
-        ),
+          if (alarm.timestamp > currentTime) {
+            //alarm is in the future
+            gestures.restore(alarm);
+            Navigator.pop(context);
+          } else {
+            //alarm is in the past
+            gestures.snackbar(context, "Please choose a time in the future");
+            Provider.of<GesturesProvider>(context, listen: false).setEdit(context, 1, alarm);
+          }
+        }
       );
     }
   }
+}
 
-  Widget buildFab(BuildContext context, AlarmInfo alarm, bool isRinging) {
-    if (isRinging) {
-      return null;
-    } else {
-      //turn off alarm
-      if (alarm.shouldNotify) {
-        return FloatingActionButton.extended(
-          label: Text("Turn OFF", style: TextStyle(color: Colors.white)),
-          icon: const Icon(CupertinoIcons.bell_slash_fill, color: Colors.white),
-          onPressed: () {
-            gestures.archive(alarm);
-            Navigator.pop(context);
-          }
-        );
+class _RingingState extends State<AlarmDetails> {
+  final gestures = GesturesProvider();
+  final helper = DateTimeHelper();
 
-      //turn on alarm
-      } else {
-        return FloatingActionButton.extended(
-          label: Text("Turn ON", style: TextStyle(color: Colors.white)),
-          icon: const Icon(CupertinoIcons.bell_fill, color: Colors.white),
-          onPressed: () {
-            int currentTime = DateTime.now().millisecondsSinceEpoch;
+  @override
+  Widget build(BuildContext context) {
+    final alarmInfo = widget.alarmInfo;
 
-            if (alarm.timestamp > currentTime) {
-              //alarm is in the future
-              gestures.restore(alarm);
-              Navigator.pop(context);
-            } else {
-              //alarm is in the past
-              gestures.snackbar(context, "Please choose a time in the future");
-              Provider.of<GesturesProvider>(context, listen: false).setEdit(context, 1, alarm);
-            }
-          }
-        );
-      }
-    }
+    return WillPopScope(
+      onWillPop: () async => !widget.isRinging,
+      child: Scaffold(
+        appBar: buildAppBar(context, alarmInfo),
+        body: _PreviewBody(alarmInfo: alarmInfo),
+        bottomNavigationBar: buildBottomBar(context, alarmInfo),
+      ),
+    );
   }
 
+  Widget buildAppBar(BuildContext context, AlarmInfo alarm) {
+    return AppBar(
+      leading: BackButton(
+        onPressed: () {
+          //snooze on exit
+          nextNotification(0, alarm);
+          Navigator.pop(context);
+        }
+      ),
+      title: Text("${alarm.name}",
+        maxLines: 1,
+        overflow: TextOverflow.fade,
+        softWrap: false,
+      ),
+      centerTitle: true,
+    );
+  }
+
+  Widget buildBottomBar(BuildContext context, AlarmInfo alarm) {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      currentIndex: 1,
+      selectedItemColor: Colors.white,
+      unselectedItemColor: Colors.white,
+      backgroundColor: Theme.of(context).primaryColor,
+      items: [
+        BottomNavigationBarItem(
+          label: "Snooze\n(10 mins)",
+          icon: Icon(Icons.snooze),
+        ),
+        BottomNavigationBarItem(
+          label: "Dismiss",
+          icon: Icon(Icons.close),
+        ),
+      ],
+      onTap: (index) {
+        //notification actions
+        nextNotification(index, alarm);
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  //schedule next notification, if possible
   void nextNotification(int action, AlarmInfo alarm) {
     final notifications = NotificationService();
     notifications.cancel(alarm.hashcode);
 
     switch (action) {
-      //snooze alarm
       case 0:
+        //snooze alarm
         gestures.toast("Alarm is snoozed for 10 minutes");
         DateTime snooze = new DateTime.now().add(new Duration(minutes: 10));
         notifications.schedule(alarm, snooze.millisecondsSinceEpoch);
         break;
 
-      //dismiss alarm
       case 1:
+        //dismiss alarm
         DateTime current = DateFormat.yMMMEd().add_jm().parse(alarm.start);
         DateTime next = helper.nextAlarm(current, alarm.option);
 
@@ -271,5 +232,67 @@ class _PreviewState extends State<AlarmPreview> {
 
         break;
     }
+  }
+}
+
+class _PreviewBody extends StatelessWidget {
+  final helper = DateTimeHelper();
+  static const int pad = 14;
+
+  final AlarmInfo alarmInfo;
+  _PreviewBody({Key key, this.alarmInfo}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(pad/2),
+      child: Column(
+        children: [
+          //alarm name and description
+          Card(
+            elevation: pad/2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+            child: ListTile(
+              leading: const Icon(Icons.event),
+              title: SelectableText("${alarmInfo.name}", textScaleFactor: 1.5,
+                  style: TextStyle(fontWeight: FontWeight.bold)
+              ),
+              subtitle: SelectableText("${alarmInfo.description}", textScaleFactor: 1.5),
+            ),
+          ),
+
+          Card(
+            elevation: pad/2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+            child: Container(
+              padding: EdgeInsets.all(pad/2),
+              child: Column(
+                children: [
+                  //alarm date and time
+                  ListTile(
+                    leading: const Icon(Icons.access_time),
+                    title: SelectableText("${alarmInfo.start}"),
+                  ),
+
+                  //alarm recurrences
+                  ListTile(
+                    leading: const Icon(Icons.repeat),
+                    title: SelectableText("${helper.recurrences[alarmInfo.option]}"),
+                  ),
+
+                  //location details
+                  ListTile(
+                    leading: const Icon(Icons.location_pin),
+                    title: SelectableText(alarmInfo.location.isEmpty?
+                    "Location not specified" : "${alarmInfo.location}"
+                    ),
+                  ),
+                ]
+              ),
+            ),
+          ),
+        ]
+      ),
+    );
   }
 }

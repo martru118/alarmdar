@@ -15,12 +15,12 @@ class RouteGenerator {
     //set named routes
     switch (settings.name) {
       //show the alarm preview
-      case AlarmPreview.route:
+      case AlarmDetails.route:
         return CupertinoPageRoute(builder: (context) {
           ScreenArguments arguments = args;
 
           return SafeArea(
-            child: AlarmPreview(
+            child: AlarmDetails(
               alarmInfo: arguments.alarmInfo,
               isRinging: arguments.isRinging,
             ),

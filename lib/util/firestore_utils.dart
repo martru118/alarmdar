@@ -3,12 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/alarm_info.dart';
 
 class AlarmModel {
-  final db = FirebaseFirestore.instance;
-  final String collectionPath = "alarms";
+  final _db = FirebaseFirestore.instance;
+  final String _collectionPath = "alarms";
 
   //get alarms from Cloud Firestore
   Stream<QuerySnapshot> retrieveAll() {
-    return db.collection(collectionPath)
+    return _db.collection(_collectionPath)
         .orderBy("notify", descending: true)
         .orderBy("timestamp")
         .snapshots();
@@ -17,7 +17,7 @@ class AlarmModel {
   //get specific alarms by reference ID
   Future<AlarmInfo> retrievebyID(String path) async {
     AlarmInfo alarmInfo;
-    await db.collection(collectionPath).doc(path).get().then((info) {
+    await _db.collection(_collectionPath).doc(path).get().then((info) {
       alarmInfo = AlarmInfo.fromMap(info.data(), reference: info.reference);
     });
 
@@ -27,13 +27,13 @@ class AlarmModel {
   //add alarm to database
   void storeData(AlarmInfo alarm) {
     String path = alarm.hashcode.toString();
-    db.collection(collectionPath).doc(path).set(alarm.toJson(), SetOptions(merge: true));
+    _db.collection(_collectionPath).doc(path).set(alarm.toJson(), SetOptions(merge: true));
   }
 
   //delete alarm
   void deleteData(String path) {
     try {
-      db.collection(collectionPath).doc(path).delete();
+      _db.collection(_collectionPath).doc(path).delete();
     } catch (e) {
       e.toString();
     }
