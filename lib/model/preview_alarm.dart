@@ -10,23 +10,19 @@ import 'package:provider/provider.dart';
 import 'alarm_info.dart';
 
 class AlarmDetails extends StatefulWidget {
+  static const String route = "/details";
   final AlarmInfo alarmInfo;
   final bool isRinging;
 
   AlarmDetails({Key key,
     @required this.alarmInfo,
     @required this.isRinging,
-  }): assert(alarmInfo.reference != null),
-      super(key: key);
+  }): super(key: key) {
+    if (!isRinging) assert(alarmInfo.reference != null);
+  }
 
   @override
   State<StatefulWidget> createState() => isRinging? _RingingState() : _PreviewState();
-
-  static const String route = "/details";
-  static final titles = [
-    "Alarm Details",
-    "Alarmdar",
-  ];
 }
 
 class _PreviewState extends State<AlarmDetails> {
@@ -145,6 +141,7 @@ class _PreviewState extends State<AlarmDetails> {
 class _RingingState extends State<AlarmDetails> {
   final gestures = GesturesProvider();
   final helper = DateTimeHelper();
+  final int snoozeLen = 10;
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +183,7 @@ class _RingingState extends State<AlarmDetails> {
       backgroundColor: Theme.of(context).primaryColor,
       items: [
         BottomNavigationBarItem(
-          label: "Snooze\n(10 mins)",
+          label: "Snooze\n$snoozeLen mins.",
           icon: Icon(Icons.snooze),
         ),
         BottomNavigationBarItem(
@@ -210,8 +207,8 @@ class _RingingState extends State<AlarmDetails> {
     switch (action) {
       case 0:
         //snooze alarm
-        gestures.toast("Alarm is snoozed for 10 minutes");
-        DateTime snooze = new DateTime.now().add(new Duration(minutes: 10));
+        gestures.toast("Alarm is snoozed for $snoozeLen minutes");
+        DateTime snooze = new DateTime.now().add(new Duration(minutes: snoozeLen));
         notifications.schedule(alarm, snooze.millisecondsSinceEpoch);
         break;
 

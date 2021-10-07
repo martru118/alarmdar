@@ -46,7 +46,9 @@ class _ListState extends State<AlarmsList> {
     return StreamBuilder<QuerySnapshot>(
       stream: listStream,
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (!snapshot.hasData) {
+        if (snapshot.hasError) {
+          return Text("${snapshot.error.toString()}");
+        } else if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
         } else {
           return ListView(

@@ -8,12 +8,9 @@ class AlarmsRepository {
 
   AlarmsRepository(this._firestore): assert(_firestore != null);
 
-  //get current Firestore instance
-  dynamic get getInstance => _firestore;
-
   //get alarms from Cloud Firestore
   Stream<QuerySnapshot> retrieveAll() {
-    print("Read from database, adding to quota");
+    print("Read from database, thereby adding to quota");
 
     return _firestore.collection(_collectionPath)
         .orderBy("notify", descending: true)
