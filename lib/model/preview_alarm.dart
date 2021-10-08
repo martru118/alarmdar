@@ -94,7 +94,6 @@ class _PreviewState extends State<AlarmDetails> {
             tooltip: 'Delete',
             icon: const Icon(Icons.delete),
             onPressed: () {
-              gestures.snackbar(context, "Alarm has been removed");
               gestures.remove(alarm.hashcode);
               Navigator.pop(context);
             },
@@ -207,7 +206,7 @@ class _RingingState extends State<AlarmDetails> {
     switch (action) {
       case 0:
         //snooze alarm
-        gestures.toast("Alarm is snoozed for $snoozeLen minutes");
+        gestures.toast("Alarm will ring in $snoozeLen minutes");
         DateTime snooze = new DateTime.now().add(new Duration(minutes: snoozeLen));
         notifications.schedule(alarm, snooze.millisecondsSinceEpoch);
         break;

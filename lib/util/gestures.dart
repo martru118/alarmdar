@@ -27,11 +27,12 @@ class GesturesProvider extends ChangeNotifier {
       arguments: ScreenArguments(
         alarmInfo: alarmInfo,
         title: AlarmForm.titles[heading],
-    ));
+    )) as AlarmInfo;
 
     //update alarm info
     if (listener != null && alarmInfo != null) {
-      setAlarm = listener as AlarmInfo;
+      listener.reference = alarmInfo.reference;
+      setAlarm = listener;
 
       print("Updated alarm info ${getAlarm.toJson()}");
       notifyListeners();
@@ -41,6 +42,7 @@ class GesturesProvider extends ChangeNotifier {
   //remove alarm if not null
   void remove(int selected) {
     print("Delete alarm $selected");
+    toast("Alarm has been removed");
 
     _db.deleteData(selected.toString());
     _notifications.cancel(selected);

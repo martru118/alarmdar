@@ -137,11 +137,9 @@ class _ListState extends State<AlarmsList> {
           },
         ),
       ),
-      onDismissed: (direction) {
-        //swipe to delete alarm
-        gestures.snackbar(context, "Alarm has been removed");
-        gestures.remove(alarmInfo.hashcode);
-      },
+
+      //swipe to delete alarm
+      onDismissed: (direction) => gestures.remove(alarmInfo.hashcode),
     );
   }
 }
