@@ -1,5 +1,5 @@
 import 'package:alarmdar/model/alarm_info.dart';
-import 'package:alarmdar/model/preview_alarm.dart';
+import 'package:alarmdar/model/details_alarm.dart';
 import 'package:alarmdar/model/form_alarm.dart';
 import 'package:alarmdar/model/list_alarms.dart';
 import 'package:flutter/cupertino.dart';
@@ -47,11 +47,9 @@ class RouteGenerator {
     }
   }
 
-  //push an activity without context
-  static void push(Widget activity) {
-    Future.delayed(Duration.zero, () {
-      _router.push(MaterialPageRoute(builder: (_) => activity));
-    });
+  //push route without context
+  static void push(String route, ScreenArguments args) {
+    Future.delayed(Duration.zero, () => _router.pushNamed(route, arguments: args));
   }
 }
 

@@ -1,4 +1,4 @@
-import 'package:alarmdar/util/date_utils.dart';
+import 'package:alarmdar/util/datetime_utils.dart';
 import 'package:alarmdar/util/gestures.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:flutter/cupertino.dart';
@@ -50,7 +50,7 @@ class _PreviewState extends State<AlarmDetails> {
 
         return Scaffold(
           appBar: AppBar(title: Text("Alarm Details")),
-          body: _PreviewBody(alarmInfo: alarmInfo),
+          body: _DetailsBody(alarmInfo: alarmInfo),
           bottomNavigationBar: buildBottomBar(context, alarmInfo),
           floatingActionButton: buildFab(context, alarmInfo),
           floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -94,7 +94,7 @@ class _PreviewState extends State<AlarmDetails> {
             tooltip: 'Delete',
             icon: const Icon(Icons.delete),
             onPressed: () {
-              gestures.remove(alarm.hashcode);
+              gestures.delete(alarm.hashcode);
               Navigator.pop(context);
             },
           ),
@@ -144,27 +144,19 @@ class _RingingState extends State<AlarmDetails> {
 
   @override
   Widget build(BuildContext context) {
-    final alarmInfo = widget.alarmInfo;
-
     return WillPopScope(
       onWillPop: () async => !widget.isRinging,
       child: Scaffold(
-        appBar: buildAppBar(context, alarmInfo),
-        body: _PreviewBody(alarmInfo: alarmInfo),
-        bottomNavigationBar: buildBottomBar(context, alarmInfo),
+        appBar: buildAppBar(context, widget.alarmInfo),
+        body: _DetailsBody(alarmInfo: widget.alarmInfo),
+        bottomNavigationBar: buildBottomBar(context, widget.alarmInfo),
       ),
     );
   }
 
   Widget buildAppBar(BuildContext context, AlarmInfo alarm) {
     return AppBar(
-      leading: BackButton(
-        onPressed: () {
-          //snooze on exit
-          nextNotification(0, alarm);
-          Navigator.pop(context);
-        }
-      ),
+      leading: BackButton(onPressed: () => nextNotification(0, alarm)),
       title: Text("${alarm.name}",
         maxLines: 1,
         overflow: TextOverflow.fade,
@@ -182,7 +174,7 @@ class _RingingState extends State<AlarmDetails> {
       backgroundColor: Theme.of(context).primaryColor,
       items: [
         BottomNavigationBarItem(
-          label: "Snooze\n$snoozeLen mins.",
+          label: "Snooze\n$snoozeLen mins",
           icon: Icon(Icons.snooze),
         ),
         BottomNavigationBarItem(
@@ -190,11 +182,9 @@ class _RingingState extends State<AlarmDetails> {
           icon: Icon(Icons.close),
         ),
       ],
-      onTap: (index) {
-        //notification actions
-        nextNotification(index, alarm);
-        Navigator.pop(context);
-      },
+
+      //notification actions
+      onTap: (index) => nextNotification(index, alarm),
     );
   }
 
@@ -228,15 +218,18 @@ class _RingingState extends State<AlarmDetails> {
 
         break;
     }
+
+    //exit screen
+    Navigator.pop(context);
   }
 }
 
-class _PreviewBody extends StatelessWidget {
+class _DetailsBody extends StatelessWidget {
   final helper = DateTimeHelper();
   static const int pad = 14;
 
   final AlarmInfo alarmInfo;
-  _PreviewBody({Key key, this.alarmInfo}) : super(key: key);
+  _DetailsBody({Key key, this.alarmInfo}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

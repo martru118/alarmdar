@@ -10,10 +10,22 @@ class DateTimeHelper {
 
   //calculate the date for the next alarm
   DateTime nextAlarm(DateTime initial, int option) {
+    final DateTime now = new DateTime.now();
+
     switch (option) {
-      //alarm repeats every second, minute, hour, bigger, better, stronger power
-      case 1: return initial.add(new Duration(hours: 1));
-      case 2: return initial.add(new Duration(days: 1));
+      //alarm repeats every hour
+      case 1:
+        var scheduled = DateTime(now.year, now.month, now.day, now.hour, initial.minute);
+        if (scheduled.isBefore(now)) scheduled = scheduled.add(new Duration(hours: 1));
+        return scheduled;
+
+      //alarm repeats every day
+      case 2:
+        var scheduled = DateTime(now.year, now.month, now.day, initial.hour, initial.minute);
+        if (scheduled.isBefore(now)) scheduled = scheduled.add(new Duration(days: 1));
+        return scheduled;
+
+      //alarm repeats every week
       case 3: return initial.add(new Duration(days: 7));
 
       //alarm repeats every month
