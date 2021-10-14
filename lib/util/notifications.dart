@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:alarmdar/model/alarm_info.dart';
-import 'package:alarmdar/model/preview_alarm.dart';
+import 'package:alarmdar/model/details_alarm.dart';
 import 'package:alarmdar/util/routes.dart';
-import 'package:flutter/painting.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'package:timezone/data/latest.dart' as tz;
@@ -13,15 +13,15 @@ import 'package:timezone/timezone.dart' as tz;
 class NotificationService {
   final String _channelID = 'alarmsChannel';
   final String _channelName = 'Reminder Alarms';
-  final String _channelDescription = 'Alarms that ring when you have a reminder';
+  final String _channelDesc = 'Alarms that ring when you have a reminder';
 
   NotificationDetails _channelInfo;
   var _localNotifications, _appLaunchDetails;
 
   //create singleton
-  static final NotificationService _notifications  = NotificationService.internal();
+  static final NotificationService _notifications  = NotificationService._internal();
   factory NotificationService() => _notifications;
-  NotificationService.internal();
+  NotificationService._internal();
 
   Future<void> init() async {
     _localNotifications = FlutterLocalNotificationsPlugin();
@@ -47,7 +47,7 @@ class NotificationService {
     var androidChannel = AndroidNotificationDetails(
       _channelID,
       _channelName,
-      _channelDescription,
+      _channelDesc,
       importance: Importance.max,
       priority: Priority.max,
       fullScreenIntent: true,
@@ -56,6 +56,7 @@ class NotificationService {
       sound: RawResourceAndroidNotificationSound("remix"),
       enableVibration: true,
       enableLights: true,
+      ongoing: true,
       additionalFlags: Int32List.fromList(flags),
     );
 
@@ -68,7 +69,11 @@ class NotificationService {
     //show preview when alarm rings
     if (payload != null) {
       AlarmInfo alarmInfo = AlarmInfo.fromMap(jsonDecode(payload));
-      RouteGenerator.push(AlarmDetails(alarmInfo: alarmInfo, isRinging: true));
+
+      RouteGenerator.push(AlarmDetails.route, new ScreenArguments(
+        alarmInfo: alarmInfo,
+        isRinging: true,
+      ));
     }
   }
 
@@ -90,9 +95,20 @@ class NotificationService {
 
   void cancel(int id) async {
     try {
+      //cancel notification, if it exists
       await _localNotifications.cancel(id);
     } catch (e) {
       e.toString();
     }
+  }
+
+  //check if notification is active
+  Future<bool> isActive(int selected) async {
+    List<ActiveNotification> activeNotifications = await _localNotifications
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .getActiveNotifications();
+
+    //if notification is in list
+    return activeNotifications.any((active) => active.id == selected);
   }
 }

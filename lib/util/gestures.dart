@@ -40,12 +40,14 @@ class GesturesProvider extends ChangeNotifier {
   }
 
   //remove alarm if not null
-  void remove(int selected) {
+  void delete(int selected) {
     print("Delete alarm $selected");
-    toast("Alarm has been removed");
 
-    _db.deleteData(selected.toString());
-    _notifications.cancel(selected);
+    if (selected != null) {
+      toast("Alarm has been removed");
+      _db.deleteData(selected.toString());
+      _notifications.cancel(selected);
+    }
   }
 
   //turn alarm off

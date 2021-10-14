@@ -1,5 +1,8 @@
-import 'package:alarmdar/model/preview_alarm.dart';
+import 'dart:async';
+
+import 'package:alarmdar/model/details_alarm.dart';
 import 'package:alarmdar/util/gestures.dart';
+import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +24,10 @@ class AlarmsList extends StatefulWidget {
 class _ListState extends State<AlarmsList> {
   final gestures = GesturesProvider();
   static const double pad = 14;
+
+  //initialize ui
   Stream listStream;
+  bool active = false;
 
   @override
   void initState() {
@@ -76,60 +82,23 @@ class _ListState extends State<AlarmsList> {
         elevation: pad/2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
         child: ListTile(
-          leading: Text("$startTime"),
+          //alarm name and times
+          leading: Text("$startTime", textAlign: TextAlign.end),
           title: Text("${alarmInfo.name}", textScaleFactor: 1.5,
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          subtitle: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Expanded(child: RichText(
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                textScaleFactor: 1.25,
-                text: TextSpan(text: "\u23F0\t",
-                  style: TextStyle(
-                    color: MediaQuery.of(context).platformBrightness == Brightness.light?
-                        Colors.grey[700] : Colors.white,
-                  ),
-                  children: [
-                    //alarm date
-                    TextSpan(text: "$startDate\n\n",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-
-                    //description
-                    TextSpan(text: "${alarmInfo.description}",
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ]
-                ),
-              )),
-            ],
-          ),
+          subtitle: Text("\n\u23F0\t$startDate"),
 
           //alarm switch
-          trailing: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Switch(
-                value: alarmInfo.shouldNotify,
-                onChanged: null
-              ),
-            ],
-          ),
+          trailing: Switch(value: alarmInfo.shouldNotify, onChanged: null),
 
-          //item gestures
-          onTap: () {
-            //show alarm preview
-            Navigator.of(context).pushNamed(
-              AlarmDetails.route,
-              arguments: ScreenArguments(
-                alarmInfo: alarmInfo,
-                isRinging: false,
-            ));
-          },
+          //go to alarm preview
+          onTap: () async => Navigator.of(context).pushNamed(
+            AlarmDetails.route,
+            arguments: ScreenArguments(
+              alarmInfo: alarmInfo,
+              isRinging: await NotificationService().isActive(alarmInfo.hashcode),
+          )),
           onLongPress: () {
             //shortcut for editing selected alarms
             HapticFeedback.selectionClick();
@@ -139,7 +108,7 @@ class _ListState extends State<AlarmsList> {
       ),
 
       //swipe to delete alarm
-      onDismissed: (direction) => gestures.remove(alarmInfo.hashcode),
+      onDismissed: (direction) => gestures.delete(alarmInfo.hashcode),
     );
   }
 }
