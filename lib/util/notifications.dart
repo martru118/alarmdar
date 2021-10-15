@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:alarmdar/model/alarm_info.dart';
-import 'package:alarmdar/model/details_alarm.dart';
+import 'package:alarmdar/screens/alarm_details.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -108,7 +108,7 @@ class NotificationService {
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         .getActiveNotifications();
 
-    //if notification is in list
+    //check for matching notification id
     return activeNotifications.any((active) => active.id == selected);
   }
 }

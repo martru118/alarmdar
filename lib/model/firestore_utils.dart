@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../model/alarm_info.dart';
+import 'alarm_info.dart';
 
 class AlarmsRepository {
   final _firestore;
@@ -11,7 +11,6 @@ class AlarmsRepository {
   //get alarms from Cloud Firestore
   Stream<QuerySnapshot> retrieveAll() {
     print("Read from database, thereby adding to quota");
-
     return _firestore.collection(_collectionPath)
         .orderBy("notify", descending: true)
         .orderBy("timestamp")

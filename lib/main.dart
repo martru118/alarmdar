@@ -1,6 +1,6 @@
-import 'package:alarmdar/model/list_alarms.dart';
-import 'package:alarmdar/util/firestore_utils.dart';
-import 'package:alarmdar/util/gestures.dart';
+import 'package:alarmdar/screens/alarms_list.dart';
+import 'package:alarmdar/model/firestore_utils.dart';
+import 'package:alarmdar/model/gestures.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

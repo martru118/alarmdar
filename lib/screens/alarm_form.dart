@@ -1,11 +1,11 @@
 import 'dart:math';
 
 import 'package:alarmdar/util/datetime_utils.dart';
-import 'package:alarmdar/util/gestures.dart';
+import 'package:alarmdar/model/gestures.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
-import 'alarm_info.dart';
+import '../model/alarm_info.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 

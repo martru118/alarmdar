@@ -1,6 +1,6 @@
 import 'package:alarmdar/model/alarm_info.dart';
-import 'package:alarmdar/model/form_alarm.dart';
-import 'package:alarmdar/util/firestore_utils.dart';
+import 'package:alarmdar/screens/alarm_form.dart';
+import 'package:alarmdar/model/firestore_utils.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

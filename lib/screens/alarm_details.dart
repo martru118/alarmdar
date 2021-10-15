@@ -1,5 +1,5 @@
 import 'package:alarmdar/util/datetime_utils.dart';
-import 'package:alarmdar/util/gestures.dart';
+import 'package:alarmdar/model/gestures.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import 'alarm_info.dart';
+import '../model/alarm_info.dart';
 
 class AlarmDetails extends StatefulWidget {
   static const String route = "/details";

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:alarmdar/model/details_alarm.dart';
-import 'package:alarmdar/util/gestures.dart';
+import 'package:alarmdar/screens/alarm_details.dart';
+import 'package:alarmdar/model/gestures.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,8 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import 'alarm_info.dart';
-import '../util/firestore_utils.dart';
+import '../model/alarm_info.dart';
+import '../model/firestore_utils.dart';
 
 class AlarmsList extends StatefulWidget {
   static const String route = "/";
@@ -24,10 +24,7 @@ class AlarmsList extends StatefulWidget {
 class _ListState extends State<AlarmsList> {
   final gestures = GesturesProvider();
   static const double pad = 14;
-
-  //initialize ui
   Stream listStream;
-  bool active = false;
 
   @override
   void initState() {

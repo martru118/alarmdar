@@ -1,7 +1,7 @@
 import 'package:alarmdar/model/alarm_info.dart';
-import 'package:alarmdar/model/details_alarm.dart';
-import 'package:alarmdar/model/form_alarm.dart';
-import 'package:alarmdar/model/list_alarms.dart';
+import 'package:alarmdar/screens/alarm_details.dart';
+import 'package:alarmdar/screens/alarm_form.dart';
+import 'package:alarmdar/screens/alarms_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
