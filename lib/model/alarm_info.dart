@@ -1,8 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:sembast/sembast.dart';
 
 class AlarmInfo {
-  DocumentReference reference;
+  RecordRef reference;
   final int hashcode;
   String start;
   int timestamp;

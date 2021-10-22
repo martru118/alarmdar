@@ -1,16 +1,13 @@
+import 'package:alarmdar/model/alarm_dao.dart';
 import 'package:alarmdar/screens/alarms_list.dart';
-import 'package:alarmdar/model/firestore_utils.dart';
 import 'package:alarmdar/model/gestures.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
   NotificationService().init();
 
   runApp(Main());
@@ -21,9 +18,14 @@ class Main extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider(create: (_) => AlarmsRepository(FirebaseFirestore.instance)),
+        FutureProvider<Stream<List>>(
+          initialData: Stream.value([]).cast<List>(),
+          create: (context) => AlarmDao().alarmStream(),
+          catchError: (_, e) => Stream.error(e),
+        ),
         ChangeNotifierProvider.value(value: GesturesProvider()),
       ],
+
       child: MaterialApp(
         title: "Alarmdar",
         debugShowCheckedModeBanner: false,

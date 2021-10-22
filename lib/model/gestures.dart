@@ -1,20 +1,17 @@
+import 'package:alarmdar/model/alarm_dao.dart';
 import 'package:alarmdar/model/alarm_info.dart';
 import 'package:alarmdar/screens/alarm_form.dart';
-import 'package:alarmdar/model/firestore_utils.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class GesturesProvider extends ChangeNotifier {
-  //getters and setters
   AlarmInfo _alarm;
   AlarmInfo get getAlarm => this._alarm;
   set setAlarm(AlarmInfo alarmInfo) => this._alarm = alarmInfo;
 
-  //inject dependencies
-  final _db = new AlarmsRepository(FirebaseFirestore.instance);
+  final _db = AlarmDao();
   final _notifications = NotificationService();
 
   //actions performed when setting and editing an alarm
@@ -45,7 +42,7 @@ class GesturesProvider extends ChangeNotifier {
 
     if (selected != null) {
       toast("Alarm has been removed");
-      _db.deleteData(selected.toString());
+      _db.deleteAlarm(selected);
       _notifications.cancel(selected);
     }
   }
@@ -57,7 +54,7 @@ class GesturesProvider extends ChangeNotifier {
 
     //cancel current alarm
     alarmInfo.shouldNotify = false;
-    _db.storeData(alarmInfo);
+    _db.storeAlarm(alarmInfo);
     _notifications.cancel(alarmInfo.hashcode);
   }
 
@@ -68,7 +65,7 @@ class GesturesProvider extends ChangeNotifier {
 
     //reschedule current alarm
     alarmInfo.shouldNotify = true;
-    _db.storeData(alarmInfo);
+    _db.storeAlarm(alarmInfo);
     _notifications.schedule(alarmInfo, alarmInfo.timestamp);
   }
 
