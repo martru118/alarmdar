@@ -137,10 +137,33 @@ class _PreviewState extends State<AlarmDetails> {
   }
 }
 
-class _RingingState extends State<AlarmDetails> {
+class _RingingState extends State<AlarmDetails> with WidgetsBindingObserver {
   final gestures = GesturesProvider();
   final helper = DateTimeHelper();
-  final int snoozeLen = 10;
+  static const int snoozeLen = 10;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    //listen to activity lifecycle
+    if (state == AppLifecycleState.paused) {
+      print("Handle app exit");
+      nextNotification(0, widget.alarmInfo);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
