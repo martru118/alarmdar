@@ -25,7 +25,6 @@ class Main extends StatelessWidget {
         ),
         ChangeNotifierProvider.value(value: GesturesProvider()),
       ],
-
       child: MaterialApp(
         title: "Alarmdar",
         debugShowCheckedModeBanner: false,

@@ -67,8 +67,7 @@ class _ListState extends State<AlarmsList> {
     String startTime = DateFormat.jm().format(alarmDateTime).replaceAll(' ', '\n');
     String startDate = DateFormat.MMMEd().format(alarmDateTime);
 
-    return Dismissible(
-      key: ValueKey(alarm.reference.key),
+    return Dismissible(key: ValueKey(alarm.reference.key),
       background: Container(color: Colors.red),
       child: Card(
         elevation: pad/2,
@@ -82,7 +81,11 @@ class _ListState extends State<AlarmsList> {
           subtitle: Text("\n\u23F0\t$startDate"),
 
           //alarm switch
-          trailing: Switch(value: alarm.shouldNotify, onChanged: null),
+          trailing: CupertinoSwitch(
+            activeColor: Colors.amber,
+            value: alarm.shouldNotify,
+            onChanged: null,
+          ),
 
           //go to alarm preview
           onTap: () async => Navigator.of(context).pushNamed(
