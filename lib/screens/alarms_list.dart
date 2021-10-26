@@ -3,6 +3,7 @@ import 'package:alarmdar/screens/alarm_details.dart';
 import 'package:alarmdar/model/gestures.dart';
 import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,13 +25,27 @@ class _ListState extends State<AlarmsList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Your Alarms")),
+      appBar: AppBar(
+        title: Text("Your Alarms"),
+        actions: [
+          //open battery optimization settings
+          IconButton(
+            tooltip: "Help",
+            icon: const Icon(Icons.help_outlined),
+            onPressed: () {
+              AppSettings.openBatteryOptimizationSettings();
+              gestures.toast("If an alarm does not ring, turn off Battery Optimizations");
+            }
+          ),
+        ]
+      ),
+
       body: buildList(context),
       floatingActionButton: FloatingActionButton(
         tooltip: "New Alarm",
         child: const Icon(Icons.add),
         onPressed: () => gestures.setEdit(context, 0),
-      )
+      ),
     );
   }
 

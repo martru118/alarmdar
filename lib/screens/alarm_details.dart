@@ -265,11 +265,16 @@ class _DetailsBody extends StatelessWidget {
             elevation: pad/2,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
             child: ListTile(
-              leading: const Icon(Icons.event),
-              title: SelectableText("${alarmInfo.name}", textScaleFactor: 1.5,
-                  style: TextStyle(fontWeight: FontWeight.bold)
+              title: SelectableText("${alarmInfo.name}",
+                textScaleFactor: pad/6,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              subtitle: SelectableText("${alarmInfo.description}", textScaleFactor: 1.5),
+              subtitle: SelectableText("${alarmInfo.description}",
+                textScaleFactor: 2,
+                textAlign: TextAlign.start,
+                style: TextStyle(fontStyle: FontStyle.italic),
+              ),
             ),
           ),
 
