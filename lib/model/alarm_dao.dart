@@ -26,9 +26,10 @@ class AlarmDao {
       List<AlarmInfo> results = [];
       field.forEach((snapshot) => results.add(AlarmInfo.fromMap(snapshot.value, reference: snapshot.ref)));
       sink.add(results);
+
+      print("${results.length} items in the database");
     });
 
-    print("Retrieve all records from the database");
     return _store.query(finder: finder).onSnapshots(await _db).transform(transformer);
   }
 

@@ -51,7 +51,7 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.max,
       fullScreenIntent: true,
-      color: const Color.fromARGB(255, 3, 169, 244),
+      color: Colors.cyan,
       playSound: true,
       sound: RawResourceAndroidNotificationSound("remix"),
       enableVibration: true,
@@ -61,6 +61,7 @@ class NotificationService {
     );
 
     _channelInfo = NotificationDetails(android: androidChannel);
+    _pendingRequests();
   }
 
   Future _onSelectNotification(String payload) async {
@@ -91,15 +92,24 @@ class NotificationService {
       payload: jsonEncode(alarmInfo.toJson()),
       androidAllowWhileIdle: true,
     );
+
+    _pendingRequests();
   }
 
   void cancel(int id) async {
     try {
       //cancel notification, if it exists
       await _localNotifications.cancel(id);
+      _pendingRequests();
     } catch (e) {
       e.toString();
     }
+  }
+
+  //get notification queue
+  void _pendingRequests() async {
+    List<PendingNotificationRequest> requests = await _localNotifications.pendingNotificationRequests();
+    print("${requests.length} notifications pending");
   }
 
   //check if notification is active
