@@ -72,9 +72,13 @@ class _AlarmFormState extends State<AlarmForm> {
     }
 
     //initialize time picker
-    if (start.isBefore(now)) start = new DateTime(now.year, now.month, now.day, start.hour, start.minute);
     minDate = new DateTime(now.year, now.month, now.day, 0, 0);
     maxDate = helper.isLeapYear(now.year + 1)? 366 : 365;
+
+    if (start.isBefore(now)) {
+      start = new DateTime(now.year, now.month, now.day, start.hour, start.minute);
+      timestamp = helper.getTimeStamp(start);
+    }
   }
 
   @override
@@ -89,38 +93,34 @@ class _AlarmFormState extends State<AlarmForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
-      body: buildForm(context),
-    );
-  }
-
-  Widget buildForm(BuildContext context) {
-    return Form(key: formKey,
-      child: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: pad/2),
-          child: Column(
-            children: [
-              Card(
-                elevation: pad/2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: buildPicker(context),
-                ),
-              ),
-
-              Card(
-                elevation: pad/2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
-                child: Container(
-                  padding: EdgeInsets.all(pad),
+      body: Form(key: formKey,
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: pad/2),
+            child: Column(
+              children: [
+                Card(
+                  elevation: pad/2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    children: buildInput(context),
-                )),
-              ),
-            ]
+                    children: buildPicker(context),
+                  ),
+                ),
+
+                Card(
+                  elevation: pad/2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
+                  child: Container(
+                    padding: EdgeInsets.all(pad),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: buildInput(context),
+                  )),
+                ),
+              ]
+            ),
           ),
         ),
       ),
@@ -142,7 +142,7 @@ class _AlarmFormState extends State<AlarmForm> {
           onDateTimeChanged: (datetime) {
             HapticFeedback.selectionClick();
 
-            //set time
+            //set time based on selection
             start = datetime;
             timestamp = helper.getTimeStamp(start);
             print("Selected time is $datetime");
@@ -155,11 +155,8 @@ class _AlarmFormState extends State<AlarmForm> {
     Container(
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(
-            color: Theme.of(context).dividerColor,
-            width: pad/8,
-        )),
-      ),
+          top: BorderSide(color: Theme.of(context).dividerColor, width: pad/8),
+      )),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -245,20 +242,18 @@ class _AlarmFormState extends State<AlarmForm> {
   ];
 
   //validate form
-  void onValidate() {
-    int currentTime = DateTime.now().millisecondsSinceEpoch;
-    print("Alarm is scheduled for $timestamp, validated at $currentTime");
+  void onValidate() async {
+    DateTime currentTime = new DateTime.now();
+    print("Alarm is scheduled for $start, validated at $currentTime");
 
-    //set new alarm
-    if (timestamp > currentTime) {
-      if (formKey.currentState.validate()) {
-        var onUpdate = newAlarm(alarmName.text, description.text, location.text);
-        Navigator.pop(context, onUpdate);
+    if (formKey.currentState.validate()) {
+      if (timestamp > currentTime.millisecondsSinceEpoch) {
+        var setAlarm = newAlarm(alarmName.text, description.text, location.text);
+        Navigator.pop(context, setAlarm);
+      } else {
+        //form is invalid due to time chosen
+        gestures.snackbar(context, "Please choose a time in the future");
       }
-
-    //form is invalid due to time chosen
-    } else {
-      gestures.snackbar(context, "Please choose a time in the future");
     }
   }
 
