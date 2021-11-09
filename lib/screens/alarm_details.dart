@@ -70,7 +70,7 @@ class _PreviewState extends State<AlarmDetails> {
           //copy button
           IconButton(
             tooltip: 'Copy',
-            icon: const Icon(Icons.copy),
+            icon: const Icon(Icons.copy, color: Colors.white),
             onPressed: () {
               //copy alarm info to clipboard
               gestures.snackbar(context, "Copied to clipboard");
@@ -83,16 +83,16 @@ class _PreviewState extends State<AlarmDetails> {
           //edit button
           IconButton(
             tooltip: 'Edit',
-            icon: const Icon(Icons.edit),
+            icon: const Icon(Icons.edit, color: Colors.white),
             onPressed: () {
               Provider.of<GesturesProvider>(context, listen: false).setEdit(context, 1, alarm);
-            }
+            },
           ),
 
           //delete button
           IconButton(
             tooltip: 'Delete',
-            icon: const Icon(Icons.delete),
+            icon: const Icon(Icons.delete, color: Colors.white),
             onPressed: () {
               gestures.delete(alarm.hashcode);
               Navigator.pop(context);
@@ -301,9 +301,8 @@ class _DetailsBody extends StatelessWidget {
                   ListTile(
                     leading: const Icon(Icons.location_pin),
                     title: SelectableText(alarmInfo.location.isEmpty?
-                    "Location not specified" : "${alarmInfo.location}"
-                    ),
-                  ),
+                        "Location not specified" : "${alarmInfo.location}"
+                  )),
                 ]
               ),
             ),
