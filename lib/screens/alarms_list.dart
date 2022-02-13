@@ -28,14 +28,31 @@ class _ListState extends State<AlarmsList> {
       appBar: AppBar(
         title: Text("Your Alarms"),
         actions: [
-          //open battery optimization settings
+          //open troubleshooting dialog
           IconButton(
             tooltip: "Help",
             icon: const Icon(Icons.help_outlined),
-            onPressed: () {
-              AppSettings.openBatteryOptimizationSettings();
-              gestures.toast("If an alarm does not ring, turn off Battery Optimizations");
-            }
+            onPressed: () => showDialog(context: context, builder: (context) {
+              const file = "assets/troubleshooting.txt";
+
+              return AlertDialog(
+                title: Text("Why is the alarm not ringing?"),
+                content: FutureBuilder<String>(
+                  initialData: "",
+                  future: rootBundle.loadString(file),
+                  builder: (context, snapshot) => Container(child: Text(snapshot.data)),
+                ),
+                actions: [
+                  //go to battery optimization settings
+                  TextButton(child: Text("SETTINGS"),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      AppSettings.openBatteryOptimizationSettings();
+                    },
+                  ),
+                ]
+              );
+            })
           ),
         ]
       ),
@@ -51,28 +68,26 @@ class _ListState extends State<AlarmsList> {
 
   Widget buildList(BuildContext context) {
     return Consumer<Stream<List>>(
-      builder: (context, provider, child) {
-        return StreamBuilder<List>(
-          initialData: [],
-          stream: provider,
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Text("${snapshot.error.toString()}");
-            } else {
-              var alarmsList = snapshot.data.cast<AlarmInfo>();
+      builder: (context, provider, child) => StreamBuilder<List>(
+        initialData: [],
+        stream: provider,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Text("${snapshot.error.toString()}");
+          } else {
+            var alarmsList = snapshot.data.cast<AlarmInfo>();
 
-              return ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: pad/2),
-                itemCount: alarmsList.length,
-                itemBuilder: (context, index) {
-                  final dao = alarmsList[index];
-                  return buildAlarm(context, dao);
-                },
-              );
-            }
-          },
-        );
-      },
+            return ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: pad/2),
+              itemCount: alarmsList.length,
+              itemBuilder: (context, index) {
+                final dao = alarmsList[index];
+                return buildAlarm(context, dao);
+              },
+            );
+          }
+        },
+      ),
     );
   }
 
