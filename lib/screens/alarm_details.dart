@@ -60,9 +60,14 @@ class _PreviewState extends State<AlarmDetails> {
   }
   
   Widget buildBottomBar(BuildContext context, AlarmInfo alarm) {
+    //change colors depending on system dark mode
+    Color background = Theme.of(context).primaryColor;
+    var brightness = MediaQuery.of(context).platformBrightness;
+    if (brightness == Brightness.dark) background = Theme.of(context).appBarTheme.backgroundColor;
+
     return BottomAppBar(
       shape: null,
-      color: Theme.of(context).primaryColor,
+      color: background,
       child: IconTheme(
         data: IconThemeData(color: Theme.of(context).colorScheme.onPrimary),
         child: Row(children: [
@@ -74,9 +79,10 @@ class _PreviewState extends State<AlarmDetails> {
             onPressed: () {
               //copy alarm info to clipboard
               gestures.snackbar(context, "Copied to clipboard");
-              Clipboard.setData(ClipboardData(
-                text: "${alarm.name}\n${alarm.start}\n\n${alarm.description}"
-              ));
+
+              String toCopy = "${alarm.name}\n${alarm.start}\n\n${alarm.description}";
+              if (alarm.location.isNotEmpty) toCopy += "\n\nLocated at: ${alarm.location}";
+              Clipboard.setData(ClipboardData(text: "$toCopy"));
             },
           ), Spacer(),
 
@@ -84,9 +90,7 @@ class _PreviewState extends State<AlarmDetails> {
           IconButton(
             tooltip: 'Edit',
             icon: const Icon(Icons.edit, color: Colors.white),
-            onPressed: () {
-              Provider.of<GesturesProvider>(context, listen: false).setEdit(context, 1, alarm);
-            },
+            onPressed: () => Provider.of<GesturesProvider>(context, listen: false).setEdit(context, 1, alarm),
           ),
 
           //delete button
@@ -192,12 +196,11 @@ class _RingingState extends State<AlarmDetails> with WidgetsBindingObserver {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       currentIndex: 1,
-      selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.white,
-      backgroundColor: Theme.of(context).primaryColor,
+      selectedItemColor: Theme.of(context).colorScheme.secondary,
+      unselectedItemColor: Theme.of(context).colorScheme.secondary,
       items: [
         BottomNavigationBarItem(
-          label: "Snooze\n$snoozeLen mins",
+          label: "Snooze\n$snoozeLen min.",
           icon: Icon(Icons.snooze),
         ),
         BottomNavigationBarItem(
@@ -266,12 +269,12 @@ class _DetailsBody extends StatelessWidget {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
             child: ListTile(
               title: SelectableText("${alarmInfo.name}",
-                textScaleFactor: pad/6,
+                textScaleFactor: pad/8,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               subtitle: SelectableText("${alarmInfo.description}",
-                textScaleFactor: 2,
+                textScaleFactor: pad/8,
                 textAlign: TextAlign.start,
                 style: TextStyle(fontStyle: FontStyle.italic),
               ),
