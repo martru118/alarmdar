@@ -47,11 +47,11 @@ class NotificationService {
     var androidChannel = AndroidNotificationDetails(
       _channelID,
       _channelName,
-      _channelDesc,
+      channelDescription: _channelDesc,
       importance: Importance.max,
       priority: Priority.max,
       fullScreenIntent: true,
-      color: Colors.cyan,
+      color: const Color.fromARGB(255, 3, 169, 244),
       playSound: true,
       sound: RawResourceAndroidNotificationSound("remix"),
       enableVibration: true,
