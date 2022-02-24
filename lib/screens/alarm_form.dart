@@ -14,9 +14,8 @@ class AlarmForm extends StatefulWidget {
   final AlarmInfo alarmInfo;
   final String title;
 
-  AlarmForm({Key key,
-    @required this.alarmInfo,
-    @required this.title,
+  AlarmForm(this.alarmInfo, this.title, {
+    Key key,
   }): super(key: key) {
     if (alarmInfo != null) assert(alarmInfo.reference != null);
   }
@@ -226,10 +225,10 @@ class _AlarmFormState extends State<AlarmForm> {
         icon: const Icon(Icons.location_on),
         labelText: "Location (optional)",
       ),
-    ), SizedBox(height: pad),
+    ),
 
     //save button
-    Row(
+    SizedBox(height: pad), Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         ElevatedButton.icon(
@@ -259,15 +258,14 @@ class _AlarmFormState extends State<AlarmForm> {
 
   //save alarm details to database
   AlarmInfo newAlarm(String name, String desc, String loc) {
-    AlarmInfo alarm = new AlarmInfo(
-      hashcode: hash,
-      start: DateFormat.yMMMEd().add_jm().format(start),
-      timestamp: timestamp,
-      option: recurrenceOption,
-      name: name,
-      description: desc,
-      location: loc,
-      shouldNotify: true,
+    AlarmInfo alarm = new AlarmInfo(hash,           /* hashcode     */
+      DateFormat.yMMMEd().add_jm().format(start),   /* start        */
+      timestamp,                                    /* timestamp    */
+      recurrenceOption,                             /* option       */
+      name,                                         /* name         */
+      desc,                                         /* description  */
+      loc,                                          /* location     */
+      true,                                         /* shouldNotify */
     );
 
     //schedule alarm

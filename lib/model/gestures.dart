@@ -21,8 +21,7 @@ class GesturesProvider extends ChangeNotifier {
     //listen for updates
     final listener = await Navigator.of(context).pushNamed(
       AlarmForm.route,
-      arguments: ScreenArguments(
-        alarmInfo: alarmInfo,
+      arguments: ScreenArguments(alarmInfo,
         title: AlarmForm.titles[heading],
     )) as AlarmInfo;
 

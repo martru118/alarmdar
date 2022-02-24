@@ -120,8 +120,7 @@ class _ListState extends State<AlarmsList> {
           //go to alarm preview
           onTap: () async => Navigator.of(context).pushNamed(
             AlarmDetails.route,
-            arguments: ScreenArguments(
-              alarmInfo: alarm,
+            arguments: ScreenArguments(alarm,
               isRinging: await NotificationService().isActive(alarm.hashcode),
           )),
           onLongPress: () {

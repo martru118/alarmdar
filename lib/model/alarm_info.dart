@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:sembast/sembast.dart';
 
 class AlarmInfo {
@@ -12,15 +11,15 @@ class AlarmInfo {
   final String location;
   bool shouldNotify;
 
-  AlarmInfo({this.reference,
-    @required this.hashcode,
-    @required this.start,
-    @required this.timestamp,
-    @required this.option,
-    @required this.name,
-    @required this.description,
-    @required this.location,
-    @required this.shouldNotify,
+  AlarmInfo(this.hashcode,
+    this.start,
+    this.timestamp,
+    this.option,
+    this.name,
+    this.description,
+    this.location,
+    this.shouldNotify, {
+    this.reference,
   });
 
   //get an alarm from map

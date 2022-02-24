@@ -14,9 +14,8 @@ class AlarmDetails extends StatefulWidget {
   final AlarmInfo alarmInfo;
   final bool isRinging;
 
-  AlarmDetails({Key key,
-    @required this.alarmInfo,
-    @required this.isRinging,
+  AlarmDetails(this.alarmInfo, this.isRinging, {
+    Key key,
   }): super(key: key) {
     if (!isRinging) assert(alarmInfo.reference != null);
   }
@@ -269,7 +268,7 @@ class _DetailsBody extends StatelessWidget {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(pad/2)),
             child: ListTile(
               title: SelectableText("${alarmInfo.name}",
-                textScaleFactor: pad/8,
+                textScaleFactor: pad/6,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),

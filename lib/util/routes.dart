@@ -18,26 +18,14 @@ class RouteGenerator {
       case AlarmDetails.route:
         return CupertinoPageRoute(builder: (context) {
           ScreenArguments arguments = args;
-
-          return SafeArea(
-            child: AlarmDetails(
-              alarmInfo: arguments.alarmInfo,
-              isRinging: arguments.isRinging,
-            ),
-          );
+          return SafeArea(child: AlarmDetails(arguments.alarmInfo, arguments.isRinging));
         });
 
       //show the alarm form
       case AlarmForm.route:
         return CupertinoPageRoute(builder: (context) {
           ScreenArguments arguments = args;
-
-          return SafeArea(
-            child: AlarmForm(
-              alarmInfo: arguments.alarmInfo,
-              title: arguments.title,
-            ),
-          );
+          return SafeArea(child: AlarmForm(arguments.alarmInfo, arguments.title));
         });
 
       //show a list of alarms
@@ -58,8 +46,7 @@ class ScreenArguments {
   final String title;
   final bool isRinging;
 
-  ScreenArguments({
-    this.alarmInfo,
+  ScreenArguments(this.alarmInfo, {
     this.title,
     this.isRinging,
   });
