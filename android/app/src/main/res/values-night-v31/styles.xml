@@ -5,6 +5,7 @@
         <item name="android:forceDarkAllowed">false</item>
         <item name="android:windowFullscreen">false</item>
         <item name="android:windowSplashScreenBackground">#61B8CC</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#FFFFFF</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.
