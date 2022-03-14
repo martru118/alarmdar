@@ -50,7 +50,7 @@ class _PreviewState extends State<AlarmDetails> {
 
         return Scaffold(
           appBar: AppBar(title: Text("Alarm Details")),
-          body: _DetailsBody(alarmInfo: alarmInfo),
+          body: _DetailsBody(alarmInfo: alarmInfo, key: widget.key),
           bottomNavigationBar: buildBottomBar(context, alarmInfo),
           floatingActionButton: buildFab(context, alarmInfo),
           floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -148,20 +148,18 @@ class _RingingState extends State<AlarmDetails> with WidgetsBindingObserver {
 
   @override
   void initState() {
+    //hide bottom bar
     super.initState();
     gestures.setAlarm = widget.alarmInfo;
-
-    //hide bottom bar
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
-    //show top bar
+    //show bottom bar
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
     WidgetsBinding.instance.removeObserver(this);
-
     gestures.setAlarm = null;
     super.dispose();
   }
@@ -187,7 +185,7 @@ class _RingingState extends State<AlarmDetails> with WidgetsBindingObserver {
         appBar: AppBar(title: Text("Alarm Details"),
           leading: BackButton(onPressed: () => nextNotification(0, alarm)),
         ),
-        body: _DetailsBody(alarmInfo: alarm),
+        body: _DetailsBody(alarmInfo: alarm, key: widget.key),
         bottomNavigationBar: buildBottomBar(context, alarm),
       ),
     );
