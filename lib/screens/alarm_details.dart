@@ -44,6 +44,7 @@ class _PreviewState extends State<AlarmDetails> {
   @override
   Widget build(BuildContext context) {
     return Consumer<GesturesProvider>(
+      key: widget.key,
       builder: (context, provider, child) {
         final alarmInfo = provider.getAlarm;
 
@@ -148,12 +149,20 @@ class _RingingState extends State<AlarmDetails> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    gestures.setAlarm = widget.alarmInfo;
+
+    //hide bottom bar
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
+    //show top bar
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
     WidgetsBinding.instance.removeObserver(this);
+
+    gestures.setAlarm = null;
     super.dispose();
   }
 
@@ -164,29 +173,22 @@ class _RingingState extends State<AlarmDetails> with WidgetsBindingObserver {
     //listen to activity lifecycle
     if (state == AppLifecycleState.paused) {
       print("Handle app exit");
-      nextNotification(0, widget.alarmInfo);
+      nextNotification(0, gestures.getAlarm);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => !widget.isRinging,
-      child: Scaffold(
-        appBar: buildAppBar(context, widget.alarmInfo),
-        body: _DetailsBody(alarmInfo: widget.alarmInfo),
-        bottomNavigationBar: buildBottomBar(context, widget.alarmInfo),
-      ),
-    );
-  }
+    final alarm = gestures.getAlarm;
 
-  Widget buildAppBar(BuildContext context, AlarmInfo alarm) {
-    return AppBar(
-      leading: BackButton(onPressed: () => nextNotification(0, alarm)),
-      title: Text("${alarm.name}",
-        maxLines: 1,
-        overflow: TextOverflow.fade,
-        softWrap: false,
+    return WillPopScope(key: widget.key,
+      onWillPop: () async => false,
+      child: Scaffold(
+        appBar: AppBar(title: Text("Alarm Details"),
+          leading: BackButton(onPressed: () => nextNotification(0, alarm)),
+        ),
+        body: _DetailsBody(alarmInfo: alarm),
+        bottomNavigationBar: buildBottomBar(context, alarm),
       ),
     );
   }

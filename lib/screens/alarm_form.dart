@@ -38,8 +38,8 @@ class _AlarmFormState extends State<AlarmForm> {
   //initialize ui
   int hash, timestamp;
   int recurrenceOption;
-  DateTime start;
-  var minDate, maxDate, alarmName, description, location;
+  DateTime start, minDate, maxDate;
+  var alarmName, description, location;
   final formKey = new GlobalKey<FormState>();
 
   @override
@@ -71,9 +71,11 @@ class _AlarmFormState extends State<AlarmForm> {
     }
 
     //initialize time picker
+    int numDays = helper.isLeapYear(now.year + 1)? 366 : 365;
     minDate = new DateTime(now.year, now.month, now.day, 0, 0);
-    maxDate = helper.isLeapYear(now.year + 1)? 366 : 365;
+    maxDate = minDate.add(new Duration(days: numDays + 1));
 
+    //fix timepicker underflow
     if (start.isBefore(now)) {
       start = new DateTime(now.year, now.month, now.day, start.hour, start.minute);
       timestamp = helper.getTimeStamp(start);
@@ -136,7 +138,7 @@ class _AlarmFormState extends State<AlarmForm> {
           mode: CupertinoDatePickerMode.dateAndTime,
           initialDateTime: start,
           minimumDate: minDate,
-          maximumDate: minDate.add(new Duration(days: maxDate + 1)),
+          maximumDate: DateTime(maxDate.year, maxDate.month, maxDate.day, 23, 59),
           use24hFormat: MediaQuery.of(context).alwaysUse24HourFormat,
           onDateTimeChanged: (datetime) {
             HapticFeedback.selectionClick();

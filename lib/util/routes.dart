@@ -18,7 +18,9 @@ class RouteGenerator {
       case AlarmDetails.route:
         return CupertinoPageRoute(builder: (context) {
           ScreenArguments arguments = args;
-          return SafeArea(child: AlarmDetails(arguments.alarmInfo, arguments.isRinging));
+          return SafeArea(child: AlarmDetails(arguments.alarmInfo, arguments.isRinging,
+            key: ValueKey(arguments.alarmInfo.hashcode),
+          ));
         });
 
       //show the alarm form
@@ -37,7 +39,7 @@ class RouteGenerator {
 
   //push route without context
   static void push(String route, ScreenArguments args) {
-    Future.delayed(Duration.zero, () => _router.pushNamed(route, arguments: args));
+    Future.delayed(new Duration(seconds: 2), () => _router.pushNamed(route, arguments: args));
   }
 }
 

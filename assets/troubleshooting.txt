@@ -1,4 +1,4 @@
-This is likely due to battery optimizations for this app. To turn it off:
+You need to turn off battery optimizations for this app.
 
 Go to Settings, and from the list of apps find "Alarmdar". Then select "Don't optimize" and reschedule the alarm.
 Note: these instructions may differ between devices.
