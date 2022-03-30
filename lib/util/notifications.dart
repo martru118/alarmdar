@@ -76,7 +76,7 @@ class NotificationService {
 
   void schedule(AlarmInfo alarmInfo, int timestamp) async {
     tz.TZDateTime when = tz.TZDateTime.fromMillisecondsSinceEpoch(tz.local, timestamp);
-    print("Notification scheduled for $when");
+    print("Alarm is scheduled for $when; validated at ${tz.TZDateTime.now(tz.local)}");
 
     //schedule notification at a specific date
     await _localNotifications.zonedSchedule(

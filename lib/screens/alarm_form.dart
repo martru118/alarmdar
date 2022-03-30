@@ -146,7 +146,7 @@ class _AlarmFormState extends State<AlarmForm> {
             //set time based on selection
             start = datetime;
             timestamp = helper.getTimeStamp(start);
-            print("Selected time is $datetime");
+            debugPrint("Selected time is $datetime");
           },
         ),
       ),
@@ -245,7 +245,6 @@ class _AlarmFormState extends State<AlarmForm> {
   //validate form
   void onValidate() async {
     DateTime currentTime = new DateTime.now();
-    print("Alarm is scheduled for $start, validated at $currentTime");
 
     if (formKey.currentState.validate()) {
       if (timestamp > currentTime.millisecondsSinceEpoch) {

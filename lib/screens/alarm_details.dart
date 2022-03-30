@@ -148,17 +148,13 @@ class _RingingState extends State<AlarmDetails> with WidgetsBindingObserver {
 
   @override
   void initState() {
-    //hide bottom bar
     super.initState();
-    gestures.setAlarm = widget.alarmInfo;
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     WidgetsBinding.instance.addObserver(this);
+    gestures.setAlarm = widget.alarmInfo;
   }
 
   @override
   void dispose() {
-    //show bottom bar
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
     WidgetsBinding.instance.removeObserver(this);
     gestures.setAlarm = null;
     super.dispose();
@@ -172,44 +168,44 @@ class _RingingState extends State<AlarmDetails> with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused) {
       print("Handle app exit");
       nextNotification(0, gestures.getAlarm);
+    } else {
+      debugPrint("Alarm is in state: $state");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final alarm = gestures.getAlarm;
+    final alarmInfo = gestures.getAlarm;
 
+    //prevent activity dismissal
     return WillPopScope(key: widget.key,
       onWillPop: () async => false,
       child: Scaffold(
-        appBar: AppBar(title: Text("Alarm Details"),
-          leading: BackButton(onPressed: () => nextNotification(0, alarm)),
+        appBar: AppBar(title: Text("Alarm Details")),
+        body: _DetailsBody(alarmInfo: alarmInfo, key: widget.key),
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: 1,
+          selectedItemColor: Theme.of(context).colorScheme.secondary,
+          unselectedItemColor: Theme.of(context).colorScheme.secondary,
+          items: [
+            //snooze alarm
+            BottomNavigationBarItem(
+              label: "Snooze\n$snoozeLen min.",
+              icon: Icon(Icons.snooze),
+            ),
+
+            //dismiss alarm
+            BottomNavigationBarItem(
+              label: "Dismiss",
+              icon: Icon(Icons.close),
+            ),
+          ],
+
+          //notification actions
+          onTap: (index) => nextNotification(index, alarmInfo),
         ),
-        body: _DetailsBody(alarmInfo: alarm, key: widget.key),
-        bottomNavigationBar: buildBottomBar(context, alarm),
       ),
-    );
-  }
-
-  Widget buildBottomBar(BuildContext context, AlarmInfo alarm) {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: 1,
-      selectedItemColor: Theme.of(context).colorScheme.secondary,
-      unselectedItemColor: Theme.of(context).colorScheme.secondary,
-      items: [
-        BottomNavigationBarItem(
-          label: "Snooze\n$snoozeLen min.",
-          icon: Icon(Icons.snooze),
-        ),
-        BottomNavigationBarItem(
-          label: "Dismiss",
-          icon: Icon(Icons.close),
-        ),
-      ],
-
-      //notification actions
-      onTap: (index) => nextNotification(index, alarm),
     );
   }
 
@@ -290,19 +286,19 @@ class _DetailsBody extends StatelessWidget {
                   //alarm date and time
                   ListTile(
                     leading: const Icon(Icons.access_time),
-                    title: SelectableText("${alarmInfo.start}"),
+                    title: Text("${alarmInfo.start}"),
                   ),
 
                   //alarm recurrences
                   ListTile(
                     leading: const Icon(Icons.repeat),
-                    title: SelectableText("${helper.recurrences[alarmInfo.option]}"),
+                    title: Text("${helper.recurrences[alarmInfo.option]}"),
                   ),
 
                   //location details
                   ListTile(
                     leading: const Icon(Icons.location_pin),
-                    title: SelectableText(alarmInfo.location.isEmpty?
+                    title: Text(alarmInfo.location.isEmpty?
                         "Location not specified" : "${alarmInfo.location}"
                   )),
                 ]
