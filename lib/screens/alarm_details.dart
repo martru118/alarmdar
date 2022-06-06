@@ -186,8 +186,6 @@ class _RingingState extends State<AlarmDetails> with WidgetsBindingObserver {
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           currentIndex: 1,
-          selectedItemColor: Theme.of(context).colorScheme.secondary,
-          unselectedItemColor: Theme.of(context).colorScheme.secondary,
           items: [
             //snooze alarm
             BottomNavigationBarItem(

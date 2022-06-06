@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:alarmdar/model/alarm_info.dart';
@@ -75,7 +76,8 @@ class NotificationService {
   }
 
   void schedule(AlarmInfo alarmInfo, int timestamp) async {
-    tz.TZDateTime when = tz.TZDateTime.fromMillisecondsSinceEpoch(tz.local, timestamp);
+    int secOffset = new Random().nextInt(5000);
+    tz.TZDateTime when = tz.TZDateTime.fromMillisecondsSinceEpoch(tz.local, timestamp + secOffset);
     print("Alarm is scheduled for $when; validated at ${tz.TZDateTime.now(tz.local)}");
 
     //schedule notification at a specific date
@@ -106,15 +108,5 @@ class NotificationService {
   void _pendingRequests() async {
     List<PendingNotificationRequest> requests = await _localNotifications.pendingNotificationRequests();
     print("${requests.length} notifications pending");
-  }
-
-  //check if notification is active
-  Future<bool> isActive(int selected) async {
-    List<ActiveNotification> activeNotifications = await _localNotifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        .getActiveNotifications();
-
-    //check for matching notification id
-    return activeNotifications.any((active) => active.id == selected);
   }
 }

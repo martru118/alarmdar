@@ -1,7 +1,6 @@
 import 'package:alarmdar/model/alarm_info.dart';
 import 'package:alarmdar/screens/alarm_details.dart';
 import 'package:alarmdar/model/gestures.dart';
-import 'package:alarmdar/util/notifications.dart';
 import 'package:alarmdar/util/routes.dart';
 import 'package:app_settings/app_settings.dart';
 import 'package:flutter/cupertino.dart';
@@ -122,9 +121,8 @@ class _ListState extends State<AlarmsList> {
           //go to alarm preview
           onTap: () async => Navigator.of(context).pushNamed(
             AlarmDetails.route,
-            arguments: ScreenArguments(alarm,
-              isRinging: await NotificationService().isActive(alarm.hashcode),
-          )),
+            arguments: ScreenArguments(alarm, isRinging: false)
+          ),
           onLongPress: () {
             //shortcut for editing selected alarms
             HapticFeedback.selectionClick();
