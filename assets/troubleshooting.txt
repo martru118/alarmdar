@@ -1,4 +1,5 @@
 You need to turn off battery optimizations for this app.
 
 Go to Settings, and from the list of apps find "Alarmdar". Then select "Don't optimize" and reschedule your alarms.
+
 Note: these instructions may differ between devices.
